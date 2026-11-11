@@ -187,7 +187,7 @@ dialog::backdrop{background:rgba(12,14,24,.42);backdrop-filter:blur(3px);-webkit
 .q{padding:13px 0;border-radius:14px;background:var(--line);font-size:17px;font-weight:800;transition:transform .12s,background .2s}
 .q.on{background:var(--milk);color:#fff}
 .step{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:12px}
-.step button{width:48px;height:48px;border-radius:50%;background:var(--line);font-size:24px;font-weight:700}
+.step button{width:48px;height:48px;border-radius:50%;background:var(--line);font-size:16px;font-weight:800}
 .step .val{min-width:120px;text-align:center}
 .step input{width:110px;border:0;background:transparent;text-align:center;font-size:40px;font-weight:800;color:var(--ink);font-family:inherit;letter-spacing:-1px}
 .step input:focus{outline:none}
@@ -219,6 +219,19 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .who2 button{padding:20px 8px;border-radius:20px;font-size:19px;font-weight:800;background:var(--line);transition:transform .12s}
 .who2 button:last-child:nth-child(odd){grid-column:1/3}
 .who2 button:active{transform:scale(.96)}
+.timeRow{display:none;align-items:center;justify-content:center;gap:6px;margin:0 0 10px}
+.timeRow.show{display:flex}
+.timeChip{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:700;color:var(--ink2);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.timeChip.on{background:var(--a2);color:var(--a);border-color:transparent}
+.nudge,.timeClr{padding:7px 11px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink2);background:var(--card);border:1px solid var(--line)}
+.timeClr{width:32px;height:32px;padding:0;font-size:18px;display:none;place-items:center;line-height:1}
+.timeClr.on{display:grid}
+.tQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.tQuick button{padding:13px 0;border-radius:14px;background:var(--line);font-size:15px;font-weight:800}
+.tQuick button:active,.nudge:active,.timeChip:active,.timeClr:active,.mlStep button:active{transform:scale(.95)}
+.mlStep{display:flex;align-items:center;gap:8px}
+.mlStep button{width:56px;height:50px;flex:none;border-radius:14px;background:var(--line);font-size:16px;font-weight:800;direction:ltr}
+.step button,.nudge,.tQuick button{direction:ltr}
 .me{cursor:pointer}
 .who2 button.on{background:linear-gradient(135deg,var(--a2),var(--b2));box-shadow:inset 0 0 0 2px var(--a)}
 .by{color:var(--ink3);font-weight:600;white-space:nowrap}
@@ -238,6 +251,12 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 </header>
 
 <main>
+  <div class="timeRow" id="timeRow">
+    <button type="button" class="timeChip" id="timeChip" onclick="openTimeDlg()"><span class="num" id="timeLbl"></span></button>
+    <button type="button" class="timeClr" id="timeClr" onclick="setLogAt(null)" aria-label="חזרה לעכשיו">×</button>
+    <button type="button" class="nudge" onclick="nudgeLog(-15)">−15 ד׳</button>
+    <button type="button" class="nudge" onclick="nudgeLog(-30)">−30 ד׳</button>
+  </div>
   <!-- HOME -->
   <section class="view on" id="v-home">
     <div class="twins" id="twins"></div>
@@ -301,13 +320,34 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <label class="fl">כמות מהירה (סמ״ק)</label>
   <div class="qs" id="qs"></div>
   <div class="step">
-    <button onclick="stepMl(5)" aria-label="הוסף">＋</button>
-    <div class="val"><input id="bMl" class="num" type="number" inputmode="numeric" placeholder="—" oninput="bSync()"><small>סמ״ק</small></div>
-    <button onclick="stepMl(-5)" aria-label="הפחת">−</button>
+    <button onclick="stepMl(1)" aria-label="הוסף סמ״ק">＋1</button>
+    <div class="val"><input id="bMl" class="num" type="number" inputmode="numeric" step="1" min="1" placeholder="—" oninput="bSync()"><small>סמ״ק</small></div>
+    <button onclick="stepMl(-1)" aria-label="הפחת סמ״ק">−1</button>
   </div>
   <label class="fl">שעה</label>
-  <input class="f num" id="bTime" type="time">
+  <input class="f num" id="bTime" type="time" oninput="paintBHint()">
+  <div class="tQuick">
+    <button type="button" onclick="setBTime(null)">עכשיו</button>
+    <button type="button" onclick="nudgeBTime(-15)">−15 ד׳</button>
+    <button type="button" onclick="nudgeBTime(-30)">−30 ד׳</button>
+  </div>
+  <p class="note" id="bTimeHint"></p>
   <div class="btns"><button class="pri" id="bSave" onclick="saveBottle()">שמירה</button><button onclick="dBottle.close()">ביטול</button></div>
+</div></dialog>
+
+<!-- time sheet -->
+<dialog class="sheet" id="dTime"><div class="sh">
+  <div class="grab"></div>
+  <h3>שעת הרישום</h3>
+  <label class="fl">שעה</label>
+  <input class="f num" id="tTime" type="time" oninput="paintTHint()">
+  <div class="tQuick">
+    <button type="button" onclick="applyNow()">עכשיו</button>
+    <button type="button" onclick="nudgeTimeField(-15)">−15 ד׳</button>
+    <button type="button" onclick="nudgeTimeField(-30)">−30 ד׳</button>
+  </div>
+  <p class="note" id="tHint"></p>
+  <div class="btns"><button class="pri" onclick="applyTime()">אישור</button><button onclick="dTime.close()">ביטול</button></div>
 </div></dialog>
 
 <!-- edit sheet -->
@@ -316,7 +356,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <h3 id="eTitle">עריכת רישום</h3>
   <label class="fl">תינוק</label><div class="seg" id="eBaby"></div>
   <label class="fl">סוג</label><div class="seg" id="eType"></div>
-  <div id="fMl"><label class="fl">כמות (סמ״ק)</label><input class="f num" id="eMl" type="number" inputmode="numeric"></div>
+  <div id="fMl"><label class="fl">כמות (סמ״ק)</label><div class="mlStep"><button type="button" onclick="stepEditMl(1)" aria-label="הוסף סמ״ק">＋1</button><input class="f num" id="eMl" type="number" inputmode="numeric" step="1" min="1"><button type="button" onclick="stepEditMl(-1)" aria-label="הפחת סמ״ק">−1</button></div></div>
   <div id="fKind"><label class="fl">החלפה</label><div class="seg" id="eKind"></div></div>
   <label class="fl">מי רשם/ה</label><select class="f" id="eBy"></select>
   <label class="fl" id="lTime">שעה</label><input class="f num" id="eTime" type="datetime-local">
@@ -375,7 +415,7 @@ function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==nul
 let data=[],tomb=[];function loadLog(){let a=load(KEY,[]);if(!Array.isArray(a))a=[];a=a.filter(e=>e&&e.id);data=a.filter(e=>!e.deleted);tomb=a.filter(e=>e.deleted)}loadLog();
 let names=Object.assign({},DEF,load(NKEY,{}));['A','B'].forEach(b=>{if(names[b]===OLDDEF[b])names[b]=DEF[b]});
 let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
-let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={};
+let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={},logAt=null;
 const $=id=>document.getElementById(id);
 const persist=()=>localStorage.setItem(KEY,JSON.stringify(data.concat(tomb)));
 const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end','by']);
@@ -445,24 +485,40 @@ function snap(){undoSnap=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=
 function commit(msg){if(undoSnap){const after=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=[...new Set([...undoSnap.keys(),...after.keys()])].filter(id=>undoSnap.get(id)!==after.get(id))}save();render();toast(msg,true);haptic(15)}
 function undo(){if(!undoSnap||!undoIds)return;for(const id of undoIds){const s=undoSnap.get(id),i=data.findIndex(e=>e.id===id);if(s){const r=JSON.parse(s);if(i>=0)data[i]=r;else data.push(r)}else if(i>=0)data.splice(i,1)}undoSnap=null;undoIds=null;save();render();toast('הפעולה בוטלה',false);haptic(8)}
 function who(bs){return bs.length>1?'לשניהם':'ל'+names[bs[0]]}
-function logBottle(bs,ml,t){snap();t=t||Date.now();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
-function logDiaper(bs,kind){snap();const t=Date.now();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
-function toggleSleep(b){snap();const s=openSleep(b),t=Date.now();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
-function sleepBoth(){snap();const t=Date.now(),sA=openSleep('A'),sB=openSleep('B');
-  if(sA&&sB){sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+hm(t))}
-  else{['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+hm(t))}}
+function logBottle(bs,ml,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
+function logDiaper(bs,kind,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
+function toggleSleep(b){const s=openSleep(b),t=logTime();if(s&&t<s.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
+function sleepBoth(){const t=logTime(),sA=openSleep('A'),sB=openSleep('B');
+  if(sA&&sB){if(t<sA.t||t<sB.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+hm(t))}
+  else{snap();['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+hm(t))}}
 
 /* ---------- bottle sheet ---------- */
 const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
 function openBottle(target){bTarget=target||cur;
   const lb=bTarget==='AB'?(lastOf('A',e=>e.type==='bottle')||lastOf('B',e=>e.type==='bottle')):lastOf(bTarget,e=>e.type==='bottle');
-  $('bMl').value=lb?lb.ml:'';$('bTime').value=hm(Date.now());renderBTarget();bSync();haptic(8);dBottle.showModal()}
+  $('bMl').value=lb?lb.ml:'';setBTime(logTime());renderBTarget();bSync();haptic(8);dBottle.showModal()}
 function renderBTarget(){seg('bTarget',[['A',names.A],['B',names.B],['AB','לשניהם']],bTarget,v=>{bTarget=v;renderBTarget()});$('bSave').textContent=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget]}
 function bSync(){const v=parseInt($('bMl').value);$('qs').innerHTML=AMOUNTS.map(a=>`<button class="q num${a===v?' on':''}" onclick="pickMl(${a})">${a}</button>`).join('');$('bSave').disabled=!(v>0)}
 function pickMl(a){$('bMl').value=a;bSync();haptic(6)}
 function stepMl(d){const v=Math.max(0,(parseInt($('bMl').value)||0)+d);$('bMl').value=v||'';bSync();haptic(5)}
-function timeFromInput(str){if(!str)return Date.now();const[h,m]=str.split(':').map(Number);const d=new Date();d.setHours(h,m,0,0);let t=d.getTime();if(t>Date.now()+60000)t-=DAY;if(Math.abs(t-Date.now())<60000)return Date.now();return t}
-function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,timeFromInput($('bTime').value))}
+function stepEditMl(d){const v=Math.max(0,(parseInt($('eMl').value)||0)+d);$('eMl').value=v||'';haptic(5)}
+function hmInput(t){const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function timeFromInput(str){if(!str)return Date.now();const[h,m]=String(str).split(':').map(Number);if(!isFinite(h)||!isFinite(m))return Date.now();const d=new Date();d.setHours(h,m,0,0);let t=d.getTime();if(t>Date.now()+60000)t-=DAY;if(Math.abs(t-Date.now())<60000)return Date.now();return t}
+function logTime(){return logAt==null?Date.now():logAt}
+function setLogAt(t){if(t==null||Math.abs(t-Date.now())<60000)logAt=null;else logAt=t;syncTimeUI()}
+function atLabel(t){const now=Date.now();t=t==null?now:t;if(logAt==null||Math.abs(t-now)<60000)return'עכשיו · '+hm(t);if(startOfDay(t)<startOfDay(now))return'אתמול · '+hm(t);return hm(t)}
+function timeHint(t){if(Math.abs(t-Date.now())<60000)return'הרישום יישמר לפי השעה הנוכחית.';if(startOfDay(t)<startOfDay(Date.now()))return'השעה הזו כבר אחרי חצות, לכן תירשם על אתמול.';return'הרישומים יישמרו בשעה הזו עד חזרה ל״עכשיו״.'}
+function nudgeLog(min){setLogAt((logAt==null?Date.now():logAt)+min*60000);haptic(5)}
+function syncTimeUI(){const row=$('timeRow');if(!row)return;row.classList.toggle('show',view==='home'||view==='baby');const custom=logAt!=null;$('timeChip').classList.toggle('on',custom);$('timeLbl').textContent=atLabel(logTime());$('timeClr').classList.toggle('on',custom)}
+function openTimeDlg(){$('tTime').value=hmInput(logTime());paintTHint();haptic(6);dTime.showModal()}
+function paintTHint(){$('tHint').textContent=timeHint(timeFromInput($('tTime').value))}
+function paintBHint(){$('bTimeHint').textContent=timeHint(timeFromInput($('bTime').value))}
+function applyTime(){setLogAt(timeFromInput($('tTime').value));dTime.close();haptic(8)}
+function applyNow(){setLogAt(null);dTime.close();haptic(8)}
+function nudgeTimeField(min){const t=timeFromInput($('tTime').value)+min*60000;$('tTime').value=hmInput(t);paintTHint();haptic(5)}
+function setBTime(t){if(t==null)t=Date.now();$('bTime').value=hmInput(t);paintBHint()}
+function nudgeBTime(min){setBTime(timeFromInput($('bTime').value)+min*60000);haptic(5)}
+function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;const t=timeFromInput($('bTime').value);setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)}
 
 /* ---------- segmented control ---------- */
 function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
@@ -591,6 +647,7 @@ function render(){
   $('age').innerHTML=me?'<span class="me" onclick="whoDlg()">👤 '+esc(me)+'</span>':'';
   if(view==='home')renderHome();else if(view==='baby')renderBaby();else if(view==='log')renderLog();else renderStats();
   document.querySelectorAll('.navIn button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  syncTimeUI();
 }
 function go(v){view=v;document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));render();window.scrollTo({top:0,behavior:'smooth'});haptic(5)}
 function openBaby(b){cur=b;localStorage.setItem(CKEY,b);go('baby')}
@@ -603,6 +660,7 @@ function tick(){
   document.querySelectorAll('[data-timer]').forEach(el=>{el.textContent=durShort(now-+el.dataset.timer)});
   document.querySelectorAll('[data-ago]').forEach(el=>{el.textContent=sinceTxt(now-+el.dataset.ago)});
   document.querySelectorAll('[data-age]').forEach(el=>{el.textContent=ageTxt(el.dataset.age)});
+  if($('timeRow')&&$('timeRow').classList.contains('show'))syncTimeUI();
 }
 
 /* toast */
