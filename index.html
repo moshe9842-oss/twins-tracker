@@ -70,7 +70,9 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .tc.A{--c:var(--a);--c2:var(--a2)}.tc.B{--c:var(--b);--c2:var(--b2)}
 .tcHead{display:flex;align-items:center;gap:8px;width:100%;text-align:right}
 .av{width:30px;height:30px;border-radius:50%;background:var(--c2);color:var(--c);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
-.tcHead b{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.tcName{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.tcName b{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block}
+.age{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:-.05px;line-height:1.25;margin-top:1px}
 .chev{color:var(--ink3);font-size:18px;line-height:1}
 .ringWrap{position:relative;width:96px;height:96px;margin:10px auto 4px}
 .ringWrap svg{width:96px;height:96px;transform:rotate(-90deg)}
@@ -129,7 +131,8 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .hero .ringWrap svg{width:118px;height:118px}
 .hero .ringIn .big{font-size:27px}
 .heroInfo{flex:1;min-width:0}
-.heroInfo h3{margin:0 0 4px;font-size:22px;font-weight:800;color:var(--c)}
+.heroInfo h3{margin:0 0 1px;font-size:22px;font-weight:800;color:var(--c)}
+.heroInfo .age{font-size:13px;font-weight:600;color:var(--ink2);margin:0 0 8px;letter-spacing:-.1px}
 .heroInfo p{margin:3px 0;font-size:13.5px;color:var(--ink2)}
 .heroInfo .chip{margin:8px 0 0}
 .bigActs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
@@ -365,7 +368,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 
 <script>
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
-const BIRTH=new Date(2026,10,10);
+const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
 const DEF={A:'בן',B:'בת'};const OLDDEF={A:'תינוק א׳',B:'תינוק ב׳'};
 const H=36e5,DAY=864e5;
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
@@ -402,7 +405,14 @@ function since(ms){const m=Math.max(0,Math.floor(ms/60000));if(m<1)return{v:'ע�
 function sinceTxt(ms){const s=since(ms);return s.u?s.v+' '+s.u:s.v}
 function dur(ms){const m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);if(!h)return m+' דק׳';return h+' שע׳'+(m%60?' '+(m%60)+' דק׳':'')}
 function durShort(ms){const m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);return h+':'+String(m%60).padStart(2,'0')}
-function ageTxt(){const d=Math.round((startOfDay(Date.now())-BIRTH.getTime())/DAY);if(d<0)return'';if(d===0)return'נולדו היום · 10.11.2026';if(d===1)return'בני יום · נולדו 10.11.2026';if(d===2)return'בני יומיים · נולדו 10.11.2026';if(d<28)return'בני '+d+' ימים';const w=Math.floor(d/7),r=d%7;return'בני '+w+' שבועות'+(r?' ו-'+r+' ימים':'')}
+const U={m:['דקה','2 דקות','דקות'],h:['שעה','שעתיים','שעות'],d:['יום','יומיים','ימים'],w:['שבוע','שבועיים','שבועות'],mo:['חודש','חודשיים','חודשים']};
+const hebN=(n,u)=>n===1?u[0]:n===2?u[1]:n+' '+u[2];
+const hebAnd=(n,u)=>n===1?'ו'+u[0]:n===2?'ו'+u[1]:'ו-'+n+' '+u[2];
+function ilParts(t){const p={};for(const x of new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(t))) if(x.type!=='literal') p[x.type]=+x.value;if(p.hour===24)p.hour=0;return p}
+function ilMs(y,m,d,h,min){const pad=n=>String(n).padStart(2,'0');for(const off of ['+02:00','+03:00']){const t=Date.parse(y+'-'+pad(m)+'-'+pad(d)+'T'+pad(h)+':'+pad(min)+':00'+off);if(!isNaN(t)){const p=ilParts(t);if(p.year===y&&p.month===m&&p.day===d&&p.hour===h&&p.minute===min)return t}}return Date.parse(y+'-'+pad(m)+'-'+pad(d)+'T'+pad(h)+':'+pad(min)+':00+02:00')}
+function addMo(p,n){let y=p.year,m=p.month+n;y+=Math.floor((m-1)/12);m=((m-1)%12+12)%12+1;const dim=new Date(Date.UTC(y,m,0)).getUTCDate();return{year:y,month:m,day:Math.min(p.day,dim),hour:p.hour,minute:p.minute}}
+function calAge(t0,now){const b=ilParts(t0);let mo=(ilParts(now).year-b.year)*12+(ilParts(now).month-b.month);let a=addMo(b,mo),t=ilMs(a.year,a.month,a.day,b.hour,b.minute);if(t>now){mo--;a=addMo(b,mo);t=ilMs(a.year,a.month,a.day,b.hour,b.minute)}return{months:Math.max(0,mo),days:Math.max(0,Math.floor((now-t)/DAY))}}
+function ageTxt(b,now){now=now==null?Date.now():now;const t0=BIRTH[b];if(!t0)return'';const ms=now-t0;if(ms<0)return'';const g=b==='A'?'בן':'בת',mins=Math.floor(ms/60000),hrs=Math.floor(ms/H),days=Math.floor(ms/DAY);if(mins<1)return b==='A'?'נולד עכשיו':'נולדה עכשיו';if(hrs<1)return g+' '+hebN(mins,U.m);if(hrs<24)return g+' '+hebN(hrs,U.h);if(days<14){const h=Math.floor((ms%DAY)/H);return g+' '+hebN(days,U.d)+(h?' · '+hebN(h,U.h):'')}const cal=calAge(t0,now);if(cal.months>=3)return g+' '+hebN(cal.months,U.mo)+(cal.days?' '+hebAnd(cal.days,U.d):'');const w=Math.floor(days/7),r=days%7;return g+' '+hebN(w,U.w)+(r?' '+hebAnd(r,U.d):'')}
 
 function isFeed(e){return e.type==='bottle'||e.type==='feed'}
 function lastOf(b,f){let r=null;for(const e of data)if(e.baby===b&&f(e)&&(!r||e.t>r.t))r=e;return r}
@@ -472,7 +482,7 @@ function sleepChip(b){const s=openSleep(b);if(s)return`<div class="chip sl"><spa
 function renderHome(){
   $('twins').innerHTML=['A','B'].map(b=>{const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
     return`<div class="glass tc ${b}">
-      <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'👦':'👧'):esc((names[b]||'?').trim().charAt(0))}</span><b>${esc(names[b])}</b><span class="chev">‹</span></button>
+      <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'👦':'👧'):esc((names[b]||'?').trim().charAt(0))}</span><span class="tcName"><b>${esc(names[b])}</b><span class="age" data-age="${b}">${esc(ageTxt(b))}</span></span><span class="chev">‹</span></button>
       <div onclick="openBaby('${b}')">${ring(b)}
       <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>${byLine(lf)}
       <div class="subl num" style="margin-top:2px">היום: <b style="color:var(--c);font-size:14px">${stats(b,startOfDay(Date.now())).ml} סמ״ק</b></div>
@@ -537,6 +547,7 @@ function renderBaby(){
   const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
   $('hero').className='glass hero '+b;
   $('hero').innerHTML=ring(b,'big')+`<div class="heroInfo"><h3>${esc(names[b])}</h3>
+    <div class="age" data-age="${b}">${esc(ageTxt(b))}</div>
     <p>🍼 ${lf?(lf.type==='bottle'?'<b style="color:var(--ink)">'+lf.ml+' סמ״ק</b> · ':'')+'ב-'+hm(lf.t)+byTxt(lf):'אין בקבוק עדיין'}</p>
     <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byTxt(ld):'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}</div>`;
   $('bigActs').innerHTML=`<button class="bigAct milk" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
@@ -577,7 +588,7 @@ function renderStats(){
 }
 
 function render(){
-  $('age').innerHTML=esc(me?ageTxt().replace(/ · נולדו .*/,''):ageTxt())+(me?' · <span class="me" onclick="whoDlg()">👤 '+esc(me)+'</span>':'');
+  $('age').innerHTML=me?'<span class="me" onclick="whoDlg()">👤 '+esc(me)+'</span>':'';
   if(view==='home')renderHome();else if(view==='baby')renderBaby();else if(view==='log')renderLog();else renderStats();
   document.querySelectorAll('.navIn button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
 }
@@ -591,6 +602,7 @@ function tick(){
   document.querySelectorAll('[data-sinceu]').forEach(el=>{const s=since(now-+el.dataset.sinceu);el.textContent=s.u?s.u+' מהבקבוק':'בקבוק אחרון'});
   document.querySelectorAll('[data-timer]').forEach(el=>{el.textContent=durShort(now-+el.dataset.timer)});
   document.querySelectorAll('[data-ago]').forEach(el=>{el.textContent=sinceTxt(now-+el.dataset.ago)});
+  document.querySelectorAll('[data-age]').forEach(el=>{el.textContent=ageTxt(el.dataset.age)});
 }
 
 /* toast */
