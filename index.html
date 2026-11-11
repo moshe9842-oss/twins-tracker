@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -33,7 +33,8 @@
   --sleep:#9a92ec;--sleep2:rgba(154,146,236,.14);--pee:#5cbde0;--poo:#c89c68;--milk:#74a7f0;
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%}
+html,body{margin:0;min-height:100%;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,select,textarea{font-size:16px}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Hebrew","Segoe UI","Heebo","Assistant",Roboto,Arial,sans-serif;color:var(--ink);
   background:radial-gradient(120% 60% at 100% 0%,var(--a2) 0%,transparent 60%),radial-gradient(120% 60% at 0% 10%,var(--b2) 0%,transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2));
   background-attachment:fixed;-webkit-font-smoothing:antialiased;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
@@ -189,6 +190,7 @@ dialog::backdrop{background:rgba(12,14,24,.42);backdrop-filter:blur(3px);-webkit
 .step input:focus{outline:none}
 .step .val small{display:block;font-size:12px;color:var(--ink3);margin-top:-4px}
 input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none;min-height:50px}
+select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239aa0ad' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 16px center;padding-left:36px}
 .btns{display:flex;gap:10px;margin-top:20px}
 .btns button{flex:1;padding:15px;border-radius:16px;font-size:16.5px;font-weight:800;background:var(--line)}
 .btns .pri{background:linear-gradient(135deg,var(--a),#2f7268);color:#fff;flex:2}
@@ -205,6 +207,19 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
 #toast span{overflow:hidden;text-overflow:ellipsis}
 @media (prefers-color-scheme:dark){#toast{background:rgba(240,242,248,.96);color:#1d2230}#toast button{color:#2f7268;background:rgba(0,0,0,.06)}.btns .pri{background:linear-gradient(135deg,#4fae9f,#3a8a7e)}}
 @media (min-width:600px){.tiles{grid-template-columns:repeat(6,1fr)}}
+#rotate{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;text-align:center;font-size:20px;font-weight:800;color:var(--ink);background:linear-gradient(180deg,var(--bg1),var(--bg2))}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){#rotate{display:flex}dialog[open],dialog::backdrop{display:none!important}}
+.who2 button:focus-visible{outline:none}
+.who2 button.add{background:transparent;border:2px dashed var(--line);color:var(--ink2);font-size:17px}
+.urow{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line)}.urow:last-child{border-bottom:0}.urow b{flex:1;font-size:16px}.urow button:focus-visible{outline:none}.urow button{width:40px;height:40px;border-radius:12px;background:var(--line);font-size:16px}
+.who2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.who2 button{padding:20px 8px;border-radius:20px;font-size:19px;font-weight:800;background:var(--line);transition:transform .12s}
+.who2 button:last-child:nth-child(odd){grid-column:1/3}
+.who2 button:active{transform:scale(.96)}
+.me{cursor:pointer}
+.who2 button.on{background:linear-gradient(135deg,var(--a2),var(--b2));box-shadow:inset 0 0 0 2px var(--a)}
+.by{color:var(--ink3);font-weight:600;white-space:nowrap}
+.byl{font-size:11px;color:var(--ink3);text-align:center;font-weight:600;margin-top:1px}
 </style>
 </head>
 <body>
@@ -300,6 +315,7 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
   <label class="fl">סוג</label><div class="seg" id="eType"></div>
   <div id="fMl"><label class="fl">כמות (סמ״ק)</label><input class="f num" id="eMl" type="number" inputmode="numeric"></div>
   <div id="fKind"><label class="fl">החלפה</label><div class="seg" id="eKind"></div></div>
+  <label class="fl">מי רשם/ה</label><select class="f" id="eBy"></select>
   <label class="fl" id="lTime">שעה</label><input class="f num" id="eTime" type="datetime-local">
   <div id="fEnd"><label class="fl">שעת התעוררות <span style="font-weight:500;color:var(--ink3)">(ריק = עדיין ישן/ה)</span></label><input class="f num" id="eEnd" type="datetime-local"></div>
   <div class="btns"><button class="pri" onclick="saveEdit()">שמירה</button><button class="dng" id="eDel" onclick="delEdit()">מחיקה</button><button onclick="dEdit.close()">ביטול</button></div>
@@ -314,6 +330,23 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
   <div class="btns"><button class="pri" onclick="saveNames()">שמירה</button><button onclick="dNames.close()">ביטול</button></div>
 </div></dialog>
 
+<!-- who sheet -->
+<dialog class="sheet" id="dWho"><div class="sh">
+  <div class="grab"></div>
+  <h3>מי משתמש/ת בטלפון הזה?</h3>
+  <div class="who2" id="whoBtns"></div>
+  <p class="note" style="text-align:center">כל רישום מהטלפון הזה יסומן בשם הזה. אפשר להחליף בתפריט ⋯</p>
+</div></dialog>
+
+<!-- users sheet -->
+<dialog class="sheet" id="dUsers"><div class="sh">
+  <div class="grab"></div>
+  <h3>ניהול משתמשים</h3>
+  <div class="glass list" id="usersList"></div>
+  <div class="btns"><button class="pri" onclick="addUser()">＋ הוספת משתמש</button><button onclick="dUsers.close()">סגירה</button></div>
+  <p class="note">הרשימה משותפת לכל המכשירים. הסרת משתמש לא משנה רישומים קודמים.</p>
+</div></dialog>
+
 <!-- menu sheet -->
 <dialog class="sheet" id="dMenu"><div class="sh menu">
   <div class="grab"></div>
@@ -321,10 +354,13 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
   <button onclick="dMenu.close();manualDlg()"><i>＋</i>רישום ידני</button>
   <button onclick="dMenu.close();renameDlg()"><i>✏️</i>שמות התינוקות</button>
   <button onclick="dMenu.close();exportCSV()"><i>⬇️</i>ייצוא ל-CSV (אקסל)</button>
+  <button onclick="dMenu.close();whoDlg()"><i>👤</i>החלפת משתמש <span id="meLbl" style="margin-inline-start:4px;color:var(--ink3);font-weight:600"></span></button>
+  <button onclick="dMenu.close();usersDlg()"><i>👥</i>ניהול משתמשים</button>
   <button onclick="dMenu.close();syncLinkDlg()"><i>🔄</i>סנכרון בין מכשירים</button>
   <p class="note" id="storeNote"></p>
 </div></dialog>
 
+<div id="rotate"><div><div style="font-size:54px;margin-bottom:12px">📱</div>סובבו את הטלפון לאורך</div></div>
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
@@ -339,7 +375,11 @@ let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
 let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={};
 const $=id=>document.getElementById(id);
 const persist=()=>localStorage.setItem(KEY,JSON.stringify(data.concat(tomb)));
-const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end']);
+const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end','by']);
+const MEKEY='twins_who_v1',DEFUSERS=['ברכי','משה','סבתא ציפורה','סבתא מירה','רבקי'];const users=()=>Array.isArray(names.users)?names.users:DEFUSERS;let me=(localStorage.getItem(MEKEY)||'').trim().slice(0,30);
+const mk=o=>{if(me)o.by=me;return o};
+const byLine=e=>e&&e.by?'<div class="byl">'+esc(e.by)+'</div>':'';
+const byTxt=e=>e&&e.by?'<span class="by"> · '+esc(e.by)+'</span>':'';
 let known=new Map();const rebuildKnown=()=>{known=new Map(data.map(e=>[e.id,{s:sig(e),e:Object.assign({},e)}]))};rebuildKnown();
 /* save = persist + detect changed/added/removed records → stamp 'updated', keep tombstones, queue for sync */
 function save(){const now=Date.now(),seen=new Set();
@@ -395,12 +435,12 @@ function snap(){undoSnap=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=
 function commit(msg){if(undoSnap){const after=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=[...new Set([...undoSnap.keys(),...after.keys()])].filter(id=>undoSnap.get(id)!==after.get(id))}save();render();toast(msg,true);haptic(15)}
 function undo(){if(!undoSnap||!undoIds)return;for(const id of undoIds){const s=undoSnap.get(id),i=data.findIndex(e=>e.id===id);if(s){const r=JSON.parse(s);if(i>=0)data[i]=r;else data.push(r)}else if(i>=0)data.splice(i,1)}undoSnap=null;undoIds=null;save();render();toast('הפעולה בוטלה',false);haptic(8)}
 function who(bs){return bs.length>1?'לשניהם':'ל'+names[bs[0]]}
-function logBottle(bs,ml,t){snap();t=t||Date.now();bs.forEach(b=>data.push({id:uid(),baby:b,type:'bottle',t,ml}));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
-function logDiaper(bs,kind){snap();const t=Date.now();bs.forEach(b=>data.push({id:uid(),baby:b,type:'diaper',t,kind}));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
-function toggleSleep(b){snap();const s=openSleep(b),t=Date.now();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push({id:uid(),baby:b,type:'sleep',t});commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
+function logBottle(bs,ml,t){snap();t=t||Date.now();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
+function logDiaper(bs,kind){snap();const t=Date.now();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
+function toggleSleep(b){snap();const s=openSleep(b),t=Date.now();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
 function sleepBoth(){snap();const t=Date.now(),sA=openSleep('A'),sB=openSleep('B');
   if(sA&&sB){sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+hm(t))}
-  else{['A','B'].forEach(b=>{if(!openSleep(b))data.push({id:uid(),baby:b,type:'sleep',t})});commit('😴 שניהם נרדמו · '+hm(t))}}
+  else{['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+hm(t))}}
 
 /* ---------- bottle sheet ---------- */
 const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
@@ -434,10 +474,10 @@ function renderHome(){
     return`<div class="glass tc ${b}">
       <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'👦':'👧'):esc((names[b]||'?').trim().charAt(0))}</span><b>${esc(names[b])}</b><span class="chev">‹</span></button>
       <div onclick="openBaby('${b}')">${ring(b)}
-      <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>
+      <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>${byLine(lf)}
       <div class="subl num" style="margin-top:2px">היום: <b style="color:var(--c);font-size:14px">${stats(b,startOfDay(Date.now())).ml} סמ״ק</b></div>
       ${sleepChip(b)}
-      <div class="mini">${ld?'החלפה: '+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>':'אין החלפות עדיין'}</div></div>
+      <div class="mini">${ld?'החלפה: '+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byLine(ld):'אין החלפות עדיין'}</div></div>
       <div class="acts">
         <button class="act" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
         <button class="act${s?' on':''}" onclick="toggleSleep('${b}')"><i>${s?'☀️':'😴'}</i>${s?'התעורר/ה':'נרדם/ה'}</button>
@@ -490,15 +530,15 @@ function barsHTML(bs){
   return`<svg viewBox="0 0 ${W} ${Hh}" font-family="inherit">${s}</svg>`+lg;
 }
 
-function itemHTML(e,showBaby){return`<button class="it" onclick="editDlg('${e.id}')"><span class="tm num">${hm(e.t)}</span><span class="ic ${icCls(e)}">${icon(e)}</span><span class="tx"><b>${esc(title(e))}</b>${subtitle(e)?'<small class="num">'+subtitle(e)+'</small>':''}</span>${showBaby?`<span class="bp ${e.baby}">${esc(names[e.baby])}</span>`:''}</button>`}
+function itemHTML(e,showBaby){return`<button class="it" onclick="editDlg('${e.id}')"><span class="tm num">${hm(e.t)}</span><span class="ic ${icCls(e)}">${icon(e)}</span><span class="tx"><b>${esc(title(e))}</b>${subtitle(e)||e.by?'<small class="num">'+(subtitle(e)||'')+(subtitle(e)?byTxt(e):esc(e.by||''))+'</small>':''}</span>${showBaby?`<span class="bp ${e.baby}">${esc(names[e.baby])}</span>`:''}</button>`}
 
 function renderBaby(){
   const b=cur;seg('babySeg',[['A',names.A],['B',names.B]],b,v=>{cur=v;localStorage.setItem(CKEY,v);render()});
   const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
   $('hero').className='glass hero '+b;
   $('hero').innerHTML=ring(b,'big')+`<div class="heroInfo"><h3>${esc(names[b])}</h3>
-    <p>🍼 ${lf?(lf.type==='bottle'?'<b style="color:var(--ink)">'+lf.ml+' סמ״ק</b> · ':'')+'ב-'+hm(lf.t):'אין בקבוק עדיין'}</p>
-    <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>':'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}</div>`;
+    <p>🍼 ${lf?(lf.type==='bottle'?'<b style="color:var(--ink)">'+lf.ml+' סמ״ק</b> · ':'')+'ב-'+hm(lf.t)+byTxt(lf):'אין בקבוק עדיין'}</p>
+    <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byTxt(ld):'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}</div>`;
   $('bigActs').innerHTML=`<button class="bigAct milk" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
     <button class="bigAct pee" onclick="logDiaper(['${b}'],'קטנים')"><i>💧</i>קטנים</button>
     <button class="bigAct poo" onclick="logDiaper(['${b}'],'גדולים')"><i>💩</i>גדולים</button>
@@ -537,7 +577,7 @@ function renderStats(){
 }
 
 function render(){
-  $('age').textContent=ageTxt();
+  $('age').innerHTML=esc(me?ageTxt().replace(/ · נולדו .*/,''):ageTxt())+(me?' · <span class="me" onclick="whoDlg()">👤 '+esc(me)+'</span>':'');
   if(view==='home')renderHome();else if(view==='baby')renderBaby();else if(view==='log')renderLog();else renderStats();
   document.querySelectorAll('.navIn button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
 }
@@ -564,15 +604,16 @@ function renderEdit(){
   seg('eKind',[['קטנים','💧 קטנים'],['גדולים','💩 גדולים'],['קטנים + גדולים','שניהם']],eState.kind,v=>{eState.kind=v;renderEdit()});
   const t=eState.type;$('fMl').style.display=t==='bottle'?'':'none';$('fKind').style.display=t==='diaper'?'':'none';$('fEnd').style.display=t==='sleep'?'':'none';$('lTime').textContent=t==='sleep'?'שעת הירדמות':'שעה';
 }
-function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים'};
+function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
   $('eTitle').textContent='עריכת רישום';$('eDel').style.display='';$('eMl').value=e.ml||'';$('eTime').value=toLocal(e.t);$('eEnd').value=e.end?toLocal(e.end):'';renderEdit();haptic(6);dEdit.showModal()}
-function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים'};
+function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים',by:me};fillBy();
   $('eTitle').textContent='רישום ידני';$('eDel').style.display='none';$('eMl').value='';$('eTime').value=toLocal(Date.now());$('eEnd').value='';renderEdit();dEdit.showModal()}
 function saveEdit(){
   const t=eState.type,e={id:editId||uid(),baby:eState.baby,type:t,t:new Date($('eTime').value).getTime()};
   if(isNaN(e.t)){alert('שעה לא תקינה');return}
   if(t==='bottle'){e.ml=parseInt($('eMl').value);if(!(e.ml>0)){alert('צריך להזין כמות בסמ״ק');return}}
   if(t==='diaper')e.kind=eState.kind;
+  const byV=$('eBy').value;if(byV)e.by=byV;
   if(t==='sleep'&&$('eEnd').value){e.end=new Date($('eEnd').value).getTime();if(e.end<e.t){alert('שעת ההתעוררות לפני שעת ההירדמות');return}}
   snap();if(editId){const i=data.findIndex(x=>x.id===editId);if(i>=0)data[i]=e;else data.push(e)}else data.push(e);
   dEdit.close();commit(editId?'✓ הרישום עודכן':'✓ נוסף רישום ל'+names[e.baby]);
@@ -581,13 +622,14 @@ function delEdit(){if(!confirm('למחוק את הרישום?'))return;snap();da
 
 /* names / menu / export */
 function renameDlg(){$('nA').value=names.A;$('nB').value=names.B;dNames.showModal()}
-function saveNames(){names={A:$('nA').value.trim()||DEF.A,B:$('nB').value.trim()||DEF.B,updated:Date.now()};localStorage.setItem(NKEY,JSON.stringify(names));if(sync){sync.namesPending=1;saveSync();syncSoon()}dNames.close();render();toast('✓ השמות נשמרו',false)}
-function openMenu(){$('storeNote').textContent=sync?('הנתונים מסונכרנים בין המכשירים ('+data.length+' רישומים)'+(syncState==='ok'?'.':syncState==='err'?' · שגיאת הרשאה בסנכרון.':' · ממתין לחיבור.')):('הנתונים נשמרים רק בדפדפן הזה, במכשיר הזה ('+data.length+' רישומים). מומלץ לייצא מדי פעם ל-CSV לגיבוי.');dMenu.showModal();haptic(5)}
+function storeNames(){names.updated=Date.now();localStorage.setItem(NKEY,JSON.stringify(names));if(sync){sync.namesPending=1;saveSync();syncSoon()}}
+function saveNames(){names.A=$('nA').value.trim()||DEF.A;names.B=$('nB').value.trim()||DEF.B;storeNames();dNames.close();render();toast('✓ השמות נשמרו',false)}
+function openMenu(){$('meLbl').textContent=me?'('+me+')':'';$('storeNote').textContent=sync?('הנתונים מסונכרנים בין המכשירים ('+data.length+' רישומים)'+(syncState==='ok'?'.':syncState==='err'?' · שגיאת הרשאה בסנכרון.':' · ממתין לחיבור.')):('הנתונים נשמרים רק בדפדפן הזה, במכשיר הזה ('+data.length+' רישומים). מומלץ לייצא מדי פעם ל-CSV לגיבוי.');dMenu.showModal();haptic(5)}
 function exportCSV(){
   const tl={feed:'האכלה',bottle:'בקבוק',diaper:'החלפה',sleep:'שינה'};
   const f=t=>{if(!t)return'';const d=new Date(t);return d.toLocaleDateString('he-IL')+' '+hm(t)};
-  const rows=[['תינוק','סוג','פרט','כמות סמ״ק','שעה','סיום שינה','משך שינה (דק׳)']].concat(
-    data.slice().sort((a,b)=>a.t-b.t).map(e=>[names[e.baby]||e.baby,tl[e.type]||e.type,e.kind||'',e.ml||'',f(e.t),f(e.end),e.end?Math.round((e.end-e.t)/60000):'']));
+  const rows=[['תינוק','סוג','פרט','כמות סמ״ק','שעה','סיום שינה','משך שינה (דק׳)','מי']].concat(
+    data.slice().sort((a,b)=>a.t-b.t).map(e=>[names[e.baby]||e.baby,tl[e.type]||e.type,e.kind||'',e.ml||'',f(e.t),f(e.end),e.end?Math.round((e.end-e.t)/60000):'',e.by||'']));
   const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   const d=new Date();a.download='twins-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.csv';
@@ -615,7 +657,7 @@ function setDot(s){syncState=s;const d=$('syncDot');d.className=sync?'on '+s:'';
 function enqueue(r){if(!sync)return;queue[r.id]=Object.assign({},r);saveQ();syncSoon()}
 function syncSoon(ms){if(!sync)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,ms==null?300:ms)}
 function cleanRec(r){const n={id:String(r.id),baby:r.baby==='B'?'B':'A',type:String(r.type),t:+r.t||0,updated:+r.updated||0};
-  if(r.ml!=null&&r.ml!=='')n.ml=+r.ml;if(r.kind)n.kind=String(r.kind);if(r.end)n.end=+r.end;if(+r.deleted===1)n.deleted=1;return n}
+  if(r.ml!=null&&r.ml!=='')n.ml=+r.ml;if(r.kind)n.kind=String(r.kind);if(r.end)n.end=+r.end;if(+r.deleted===1)n.deleted=1;if(r.by&&typeof r.by==='string')n.by=r.by.trim().slice(0,30);return n}
 async function api(body){
   const res=await fetch(sync.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:sync.k},body)),redirect:'follow',cache:'no-store'});
   const j=await res.json();if(!j||!j.ok){const err=new Error(j&&j.error||'error');err.auth=j&&j.error==='auth';throw err}return j}
@@ -627,7 +669,10 @@ function mergeRemote(recs){let changed=false;
     data=data.filter(e=>e.id!==r.id);tomb=tomb.filter(e=>e.id!==r.id);(r.deleted?tomb:data).push(r);changed=true}
   if(changed){persist();rebuildKnown()}return changed}
 function applyNames(n){if(!n||!sync||sync.namesPending)return false;if((+n.updated||0)<=(+names.updated||0))return false;
-  names={A:(n.A&&n.A!==OLDDEF.A)?n.A:DEF.A,B:(n.B&&n.B!==OLDDEF.B)?n.B:DEF.B,updated:+n.updated};localStorage.setItem(NKEY,JSON.stringify(names));return true}
+  const U=Array.isArray(n.users)?n.users.map(x=>String(x).trim().slice(0,30)).filter(Boolean):names.users;
+  names={A:(n.A&&n.A!==OLDDEF.A)?n.A:DEF.A,B:(n.B&&n.B!==OLDDEF.B)?n.B:DEF.B,updated:+n.updated};if(U)names.users=U;localStorage.setItem(NKEY,JSON.stringify(names));
+  if(me&&U&&!U.includes(me)){me='';localStorage.removeItem(MEKEY);setTimeout(whoDlg,300)}
+  if(window.dUsers&&dUsers.open)usersDlg();return true}
 async function syncNow(){
   if(!sync)return;if(syncBusy){syncAgain=true;return}
   syncBusy=true;clearTimeout(syncTimer);setDot('busy');
@@ -636,7 +681,7 @@ async function syncNow(){
     if(recs.length){const sent=recs.map(r=>Object.assign({},r,{updated:r.updated||r.t||1}));
       await api({op:'upsert',records:sent});
       sent.forEach(r=>{const q=queue[r.id];if(q&&(q.updated||q.t||1)===r.updated)delete queue[r.id]});saveQ()}
-    if(sync.namesPending){const j=await api({op:'setNames',names:{A:names.A,B:names.B,updated:names.updated||Date.now()}});sync.namesPending=0;saveSync();applyNames(j.names)}
+    if(sync.namesPending){const j=await api({op:'setNames',names:{A:names.A,B:names.B,users:users(),updated:names.updated||Date.now()}});sync.namesPending=0;saveSync();applyNames(j.names)}
     const j=await api({op:'list',since:Math.max(0,(sync.since||0)-60000)});
     let ch=mergeRemote(j.records);if(applyNames(j.names))ch=true;
     sync.since=+j.now||sync.since;saveSync();syncFail=0;
@@ -670,7 +715,25 @@ function readSyncHash(){
   window.addEventListener('focus',()=>syncSoon(100));
 })();
 
+/* who am I (per device, not synced) */
+function fillBy(){$('eBy').innerHTML='<option value="">—</option>'+users().map(n=>`<option${n===eState.by?' selected':''}>${esc(n)}</option>`).join('')+(eState.by&&!users().includes(eState.by)?`<option selected>${esc(eState.by)}</option>`:'')}
+function whoDlg(){$('whoBtns').innerHTML=users().map(n=>`<button class="${n===me?'on':''}" data-me="${esc(n)}">${esc(n)}</button>`).join('')+'<button class="add" data-add="1">＋ הוספת משתמש</button>';
+  $('whoBtns').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.add){const n=askName('שם המשתמש/ת החדש/ה:');if(n){if(!users().includes(n))setUsers(users().concat(n));setMe(n)}}else setMe(b.dataset.me)});dWho.showModal()}
+function askName(q,def){const s=prompt(q,def||'');if(s==null)return'';const n=s.trim().slice(0,30);if(!n)return'';return n}
+function setUsers(list){names.users=[...new Set(list.map(x=>String(x).trim()).filter(Boolean))];storeNames()}
+function usersDlg(){const L=users();$('usersList').innerHTML=L.length?L.map((n,i)=>`<div class="urow"><b>${esc(n)}${n===me?' <span class="by">(בטלפון הזה)</span>':''}</b><button onclick="renUser(${i})" aria-label="שינוי שם">✏️</button><button onclick="delUser(${i})" aria-label="הסרה">🗑️</button></div>`).join(''):'<div class="empty">אין משתמשים</div>';if(!dUsers.open)dUsers.showModal()}
+function addUser(){const n=askName('שם המשתמש/ת החדש/ה:');if(!n)return;if(users().includes(n)){alert('השם כבר קיים');return}setUsers(users().concat(n));usersDlg();toast('✓ נוסף/ה: '+n,false)}
+function renUser(i){const L=users().slice(),old=L[i];const n=askName('שם חדש:',old);if(!n||n===old)return;if(L.includes(n)){alert('השם כבר קיים');return}L[i]=n;setUsers(L);if(me===old){me=n;localStorage.setItem(MEKEY,n)}usersDlg();render()}
+function delUser(i){const L=users().slice(),n=L[i];if(!confirm('להסיר את '+n+' מהרשימה? רישומים קודמים יישארו עם השם.'))return;L.splice(i,1);setUsers(L);usersDlg();if(me===n){me='';localStorage.removeItem(MEKEY);render();dUsers.close();whoDlg()}}
+function setMe(v){me=v;localStorage.setItem(MEKEY,v);dWho.close();haptic(10);render();toast('👤 משתמש/ת: '+v,false)}
+/* no zoom, portrait only */
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait').catch(()=>{})}catch(e){}
+
 tick();render();setInterval(tick,1000);setInterval(render,60000);
+if(!me)setTimeout(whoDlg,400);
 </script>
 </body>
 </html>
