@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="התאומים">
+<meta name="application-name" content="התאומים">
+<meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11131b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234a9a8e'/%3E%3Cstop offset='1' stop-color='%23c46f90'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23g)'/%3E%3Ccircle cx='37' cy='52' r='15' fill='%23fff' opacity='.95'/%3E%3Ccircle cx='63' cy='52' r='15' fill='%23fff' opacity='.75'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="appleIcon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>התאומים · מעקב</title>
+<style>
+:root{
+  --bg1:#f8f4ee;--bg2:#efe8f1;--ink:#1d2230;--ink2:#5d6475;--ink3:#9aa0ad;
+  --card:rgba(255,255,255,.72);--card2:rgba(255,255,255,.9);--line:rgba(29,34,48,.08);
+  --shadow:0 1px 2px rgba(29,34,48,.04),0 8px 24px rgba(29,34,48,.07);
+  --a:#3f8f84;--a2:#e3f1ee;--b:#c0688a;--b2:#f8e7ee;--gold:#c2964a;
+  --ok:#3f9a76;--mid:#d39a34;--hot:#d0624f;--sleep:#6c63b5;--sleep2:#ecebf8;
+  --pee:#3c9fc0;--poo:#a07a4c;--milk:#4a86d6;
+  --r:22px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg1:#10121a;--bg2:#171a26;--ink:#eef0f6;--ink2:#a9afbf;--ink3:#6b7184;
+  --card:rgba(255,255,255,.055);--card2:rgba(34,38,52,.96);--line:rgba(255,255,255,.08);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  --a:#5cc0b1;--a2:rgba(92,192,177,.14);--b:#e48aac;--b2:rgba(228,138,172,.14);--gold:#ddb56c;
+  --sleep:#9a92ec;--sleep2:rgba(154,146,236,.14);--pee:#5cbde0;--poo:#c89c68;--milk:#74a7f0;
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Hebrew","Segoe UI","Heebo","Assistant",Roboto,Arial,sans-serif;color:var(--ink);
+  background:radial-gradient(120% 60% at 100% 0%,var(--a2) 0%,transparent 60%),radial-gradient(120% 60% at 0% 10%,var(--b2) 0%,transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+button:focus{outline:none}button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.seg button:focus-visible{outline:none}
+.num{font-variant-numeric:tabular-nums}
+/* header */
+.top{position:sticky;top:0;z-index:20;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,var(--bg1) 60%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;box-shadow:0 6px 16px rgba(192,104,138,.25)}
+.brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.2px}
+.brand small{display:block;color:var(--ink2);font-size:12.5px;font-weight:500;margin-top:1px}
+.topR{display:flex;align-items:center;gap:8px}
+.clock{font-size:15px;font-weight:700;color:var(--ink2);padding:7px 11px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;gap:7px}
+#syncDot{display:none;width:7px;height:7px;border-radius:50%;background:var(--ink3);transition:background .3s}
+#syncDot.on{display:block}#syncDot.ok{background:var(--ok)}#syncDot.busy{background:var(--mid);animation:pulse 1.2s infinite}#syncDot.off{background:var(--ink3)}#syncDot.err{background:var(--hot)}
+.iconBtn{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+.iconBtn svg{width:19px;height:19px;stroke:var(--ink2)}
+main{padding:4px 14px 0;max-width:640px;margin:0 auto}
+.view{display:none;animation:fade .35s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sec{margin:20px 4px 10px;display:flex;align-items:baseline;justify-content:space-between}
+.sec h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.1px}
+.sec span{font-size:12.5px;color:var(--ink3)}
+.glass{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3)}
+/* twin cards */
+.twins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tc{padding:14px 12px 12px;position:relative;overflow:hidden}
+.tc::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--c)}
+.tc.A{--c:var(--a);--c2:var(--a2)}.tc.B{--c:var(--b);--c2:var(--b2)}
+.tcHead{display:flex;align-items:center;gap:8px;width:100%;text-align:right}
+.av{width:30px;height:30px;border-radius:50%;background:var(--c2);color:var(--c);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+.tcHead b{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.chev{color:var(--ink3);font-size:18px;line-height:1}
+.ringWrap{position:relative;width:96px;height:96px;margin:10px auto 4px}
+.ringWrap svg{width:96px;height:96px;transform:rotate(-90deg)}
+.ringIn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ringIn .big{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.05}
+.ringIn .lbl{font-size:10.5px;color:var(--ink2);margin-top:2px}
+.ringIn .icon{font-size:13px;margin-bottom:1px;opacity:.85}
+.subl{text-align:center;font-size:12.5px;color:var(--ink2);min-height:18px}
+.chip{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px auto 0;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--line);color:var(--ink2);width:fit-content;max-width:100%}
+.chip.sl{background:var(--sleep2);color:var(--sleep)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.sl .dot{animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.mini{font-size:11.5px;color:var(--ink3);text-align:center;margin-top:6px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.act{min-height:50px;border-radius:15px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:12px;font-weight:700;color:var(--ink2);transition:transform .12s ease,background .2s}
+.act i{font-style:normal;font-size:18px;line-height:1.1}
+.act:active,.bigAct:active,.both button:active,.q:active,.pill:active{transform:scale(.95)}
+.act.on{background:var(--sleep2);color:var(--sleep);border-color:transparent}
+/* both */
+.both{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}
+.both button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px;border-radius:16px;font-size:11.5px;font-weight:700;color:var(--ink2);transition:transform .12s}
+.both button i{font-style:normal;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:19px;background:linear-gradient(135deg,var(--a2),var(--b2))}
+/* compare table */
+.cmp{padding:6px 14px}
+.cmpRow{display:grid;grid-template-columns:1.25fr 1fr 1fr;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cmpRow:last-child{border-bottom:0}
+.cmpRow .k{color:var(--ink2);font-size:13px;display:flex;align-items:center;gap:6px}
+.cmpRow .v{text-align:center;font-weight:800;font-size:16px}
+.cmpRow.h .v{font-size:12.5px;font-weight:800}
+.cmpRow.h .v.A{color:var(--a)}.cmpRow.h .v.B{color:var(--b)}
+.u{font-size:11px;font-weight:600;color:var(--ink3);margin-inline-start:2px}
+/* strip */
+.strip{padding:14px}
+.stripRow{margin-bottom:10px}
+.stripRow .nm{font-size:12.5px;font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.stripRow .nm .d{width:8px;height:8px;border-radius:50%}
+.strip svg{width:100%;height:auto;display:block;direction:ltr}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--ink2);margin-top:4px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.axis{display:flex;justify-content:space-between;direction:ltr;font-size:10.5px;color:var(--ink3);margin-top:2px}
+/* bars */
+.chart{padding:14px 12px 10px}
+.chart svg{width:100%;height:auto;display:block;direction:ltr}
+/* baby detail */
+.backRow{display:flex;align-items:center;gap:10px;margin:6px 2px 12px}
+.backRow button{display:flex;align-items:center;gap:4px;font-weight:700;color:var(--ink2);padding:8px 12px 8px 6px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.seg{display:flex;padding:4px;border-radius:14px;background:var(--line);gap:4px}
+.seg button{flex:1;padding:9px 6px;border-radius:11px;font-size:14px;font-weight:700;color:var(--ink2);transition:background .2s,color .2s}
+.seg button.on{background:var(--card2);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.hero{padding:18px 16px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden}
+.hero.A{--c:var(--a);--c2:var(--a2)}.hero.B{--c:var(--b);--c2:var(--b2)}
+.hero::after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:var(--c2);left:-80px;top:-90px;z-index:-1}
+.hero .ringWrap{margin:0;width:118px;height:118px;flex:none}
+.hero .ringWrap svg{width:118px;height:118px}
+.hero .ringIn .big{font-size:27px}
+.heroInfo{flex:1;min-width:0}
+.heroInfo h3{margin:0 0 4px;font-size:22px;font-weight:800;color:var(--c)}
+.heroInfo p{margin:3px 0;font-size:13.5px;color:var(--ink2)}
+.heroInfo .chip{margin:8px 0 0}
+.bigActs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.bigAct{min-height:74px;border-radius:20px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;font-weight:800;color:#fff;box-shadow:var(--shadow);transition:transform .12s}
+.bigAct i{font-style:normal;font-size:24px}
+.bigAct.milk{background:linear-gradient(135deg,#5b95e0,#3f6fc4);grid-column:1/3}
+.bigAct.pee{background:linear-gradient(135deg,#4fb2cf,#2f8fb0)}
+.bigAct.poo{background:linear-gradient(135deg,#b48b5a,#8d6a3f)}
+.bigAct.slp{background:linear-gradient(135deg,#7c74c8,#5a51a8);grid-column:1/3}
+.bigAct.wake{background:linear-gradient(135deg,#e2b04f,#c98f2a);grid-column:1/3}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{padding:12px 6px;text-align:center}
+.tile b{display:block;font-size:20px;font-weight:800;letter-spacing:-.3px}
+.tile span{font-size:11.5px;color:var(--ink2)}
+/* timeline */
+.tlHead{display:flex;gap:8px;align-items:center;margin:6px 0 4px}
+.tlHead .seg{flex:1}
+.addBtn{height:42px;padding:0 14px;border-radius:14px;background:var(--ink);color:var(--bg1);font-weight:800;font-size:14px;white-space:nowrap}
+.day{margin-top:16px}
+.dayH{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:2px 10px;margin:0 6px 8px}
+.dayH b{font-size:15px;font-weight:800}
+.dayH span{font-size:12px;color:var(--ink3)}
+.list{padding:4px 0}
+.it{display:flex;align-items:center;gap:12px;padding:11px 14px;width:100%;text-align:right;border-bottom:1px solid var(--line)}
+.it:last-child{border-bottom:0}
+.it .tm{font-size:14px;font-weight:700;color:var(--ink2);min-width:44px}
+.it .ic{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:17px;flex:none}
+.ic.bottle{background:rgba(74,134,214,.13)}.ic.diaper{background:rgba(60,159,192,.13)}.ic.poo{background:rgba(160,122,76,.15)}.ic.sleep{background:var(--sleep2)}.ic.feed{background:rgba(74,134,214,.13)}
+.it .tx{flex:1;min-width:0}
+.it .tx b{display:block;font-size:14.5px;font-weight:700}
+.it .tx small{font-size:12px;color:var(--ink3)}
+.bp{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.bp.A{background:var(--a2);color:var(--a)}.bp.B{background:var(--b2);color:var(--b)}
+.empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
+.empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
+/* nav */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:8px 16px calc(10px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+.navIn{display:flex;gap:4px;padding:6px;border-radius:24px;width:100%;max-width:420px}
+.navIn button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:18px;font-size:11.5px;font-weight:700;color:var(--ink3);transition:background .2s,color .2s}
+.navIn button svg{width:22px;height:22px;stroke:currentColor}
+.navIn button.on{color:var(--ink);background:var(--card2);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+/* sheets */
+dialog.sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:560px;max-height:92vh;border-radius:28px 28px 0 0;background:var(--card2);color:var(--ink);box-shadow:0 -10px 40px rgba(0,0,0,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+dialog.sheet[open]{animation:up .32s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+dialog::backdrop{background:rgba(12,14,24,.42);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.sh{padding:10px 18px calc(18px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px;background:var(--ink3);opacity:.35}
+.sh h3{margin:0 0 14px;font-size:19px;font-weight:800;text-align:center}
+.fl{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin:14px 2px 7px}
+.qs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.q{padding:13px 0;border-radius:14px;background:var(--line);font-size:17px;font-weight:800;transition:transform .12s,background .2s}
+.q.on{background:var(--milk);color:#fff}
+.step{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:12px}
+.step button{width:48px;height:48px;border-radius:50%;background:var(--line);font-size:24px;font-weight:700}
+.step .val{min-width:120px;text-align:center}
+.step input{width:110px;border:0;background:transparent;text-align:center;font-size:40px;font-weight:800;color:var(--ink);font-family:inherit;letter-spacing:-1px}
+.step input:focus{outline:none}
+.step .val small{display:block;font-size:12px;color:var(--ink3);margin-top:-4px}
+input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none;min-height:50px}
+.btns{display:flex;gap:10px;margin-top:20px}
+.btns button{flex:1;padding:15px;border-radius:16px;font-size:16.5px;font-weight:800;background:var(--line)}
+.btns .pri{background:linear-gradient(135deg,var(--a),#2f7268);color:#fff;flex:2}
+.btns .pri:disabled{opacity:.4}
+.btns .dng{background:rgba(208,98,79,.12);color:var(--hot)}
+.menu button{display:flex;align-items:center;gap:12px;width:100%;padding:15px 12px;border-radius:14px;font-size:16px;font-weight:700;text-align:right}
+.menu button:active{background:var(--line)}
+.menu i{font-style:normal;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--line);font-size:17px}
+.note{font-size:12px;color:var(--ink3);line-height:1.5;margin:10px 4px 0}
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:40;display:flex;align-items:center;gap:14px;padding:11px 12px 11px 18px;border-radius:18px;background:rgba(29,34,48,.94);color:#fff;font-size:14.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1.2);max-width:calc(100% - 28px);white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{color:#9fe3d8;font-weight:800;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.1)}
+#toast span{overflow:hidden;text-overflow:ellipsis}
+@media (prefers-color-scheme:dark){#toast{background:rgba(240,242,248,.96);color:#1d2230}#toast button{color:#2f7268;background:rgba(0,0,0,.06)}.btns .pri{background:linear-gradient(135deg,#4fae9f,#3a8a7e)}}
+@media (min-width:600px){.tiles{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="8.5" cy="12" r="5" fill="#fff"/><circle cx="15.5" cy="12" r="5" fill="#fff" opacity=".7"/></svg></div>
+    <div><h1>התאומים</h1><small id="age"></small></div>
+  </div>
+  <div class="topR">
+    <div class="clock num"><span id="clock"></span><i id="syncDot" title=""></i></div>
+    <button class="iconBtn" onclick="openMenu()" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="view on" id="v-home">
+    <div class="twins" id="twins"></div>
+    <div class="sec"><h2>לשניהם בלחיצה</h2><span>נרשם לשני התינוקות יחד</span></div>
+    <div class="glass both">
+      <button onclick="openBottle('AB')"><i>🍼</i>בקבוק</button>
+      <button onclick="logDiaper(['A','B'],'קטנים')"><i>💧</i>קטנים</button>
+      <button onclick="logDiaper(['A','B'],'גדולים')"><i>💩</i>גדולים</button>
+      <button onclick="sleepBoth()" id="bothSleep"><i>😴</i>נרדמו</button>
+    </div>
+    <div class="sec"><h2>24 השעות האחרונות</h2><span id="sumNow"></span></div>
+    <div class="glass cmp" id="cmp"></div>
+    <div class="sec"><h2>ציר 24 שעות</h2><span>בקבוקים, החלפות ושינה</span></div>
+    <div class="glass strip" id="stripHome"></div>
+  </section>
+
+  <!-- BABY DETAIL -->
+  <section class="view" id="v-baby">
+    <div class="backRow"><button onclick="go('home')">› סקירה</button><div class="seg" style="flex:1" id="babySeg"></div></div>
+    <div class="glass hero" id="hero"></div>
+    <div class="bigActs" id="bigActs"></div>
+    <div class="sec"><h2>24 השעות האחרונות</h2></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="sec"><h2>ציר 24 שעות</h2></div>
+    <div class="glass strip" id="stripBaby"></div>
+    <div class="sec"><h2>סמ״ק ביום</h2><span>7 ימים אחרונים</span></div>
+    <div class="glass chart" id="barsBaby"></div>
+    <div class="sec"><h2>רישומים אחרונים</h2><span>הקשה לעריכה</span></div>
+    <div class="glass list" id="babyList"></div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="view" id="v-log">
+    <div class="tlHead"><div class="seg" id="filterSeg"></div><button class="addBtn" onclick="manualDlg()">＋ ידני</button></div>
+    <div id="timeline"></div>
+  </section>
+
+  <!-- CHARTS -->
+  <section class="view" id="v-stats">
+    <div class="sec" style="margin-top:8px"><h2>סמ״ק ביום</h2><span>7 ימים אחרונים</span></div>
+    <div class="glass chart" id="bars"></div>
+    <div class="sec"><h2>ציר 24 שעות</h2></div>
+    <div class="glass strip" id="stripStats"></div>
+    <div class="sec"><h2>סיכום יומי</h2><span>לפי יום קלנדרי</span></div>
+    <div class="glass cmp" id="daily"></div>
+  </section>
+</main>
+
+<nav><div class="navIn glass">
+  <button data-v="home" class="on" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="2"/></svg>סקירה</button>
+  <button data-v="baby" onclick="go('baby')"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="9" r="5"/><path d="M4.5 21c1.4-3.6 4.2-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg>תינוק</button>
+  <button data-v="log" onclick="go('log')"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>יומן</button>
+  <button data-v="stats" onclick="go('stats')"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>גרפים</button>
+</div></nav>
+
+<!-- bottle sheet -->
+<dialog class="sheet" id="dBottle"><div class="sh">
+  <div class="grab"></div>
+  <h3>🍼 בקבוק</h3>
+  <div class="seg" id="bTarget"></div>
+  <label class="fl">כמות מהירה (סמ״ק)</label>
+  <div class="qs" id="qs"></div>
+  <div class="step">
+    <button onclick="stepMl(5)" aria-label="הוסף">＋</button>
+    <div class="val"><input id="bMl" class="num" type="number" inputmode="numeric" placeholder="—" oninput="bSync()"><small>סמ״ק</small></div>
+    <button onclick="stepMl(-5)" aria-label="הפחת">−</button>
+  </div>
+  <label class="fl">שעה</label>
+  <input class="f num" id="bTime" type="time">
+  <div class="btns"><button class="pri" id="bSave" onclick="saveBottle()">שמירה</button><button onclick="dBottle.close()">ביטול</button></div>
+</div></dialog>
+
+<!-- edit sheet -->
+<dialog class="sheet" id="dEdit"><div class="sh">
+  <div class="grab"></div>
+  <h3 id="eTitle">עריכת רישום</h3>
+  <label class="fl">תינוק</label><div class="seg" id="eBaby"></div>
+  <label class="fl">סוג</label><div class="seg" id="eType"></div>
+  <div id="fMl"><label class="fl">כמות (סמ״ק)</label><input class="f num" id="eMl" type="number" inputmode="numeric"></div>
+  <div id="fKind"><label class="fl">החלפה</label><div class="seg" id="eKind"></div></div>
+  <label class="fl" id="lTime">שעה</label><input class="f num" id="eTime" type="datetime-local">
+  <div id="fEnd"><label class="fl">שעת התעוררות <span style="font-weight:500;color:var(--ink3)">(ריק = עדיין ישן/ה)</span></label><input class="f num" id="eEnd" type="datetime-local"></div>
+  <div class="btns"><button class="pri" onclick="saveEdit()">שמירה</button><button class="dng" id="eDel" onclick="delEdit()">מחיקה</button><button onclick="dEdit.close()">ביטול</button></div>
+</div></dialog>
+
+<!-- names sheet -->
+<dialog class="sheet" id="dNames"><div class="sh">
+  <div class="grab"></div>
+  <h3>שמות התינוקות</h3>
+  <label class="fl">תינוק א׳</label><input class="f" id="nA" autocomplete="off">
+  <label class="fl">תינוק ב׳</label><input class="f" id="nB" autocomplete="off">
+  <div class="btns"><button class="pri" onclick="saveNames()">שמירה</button><button onclick="dNames.close()">ביטול</button></div>
+</div></dialog>
+
+<!-- menu sheet -->
+<dialog class="sheet" id="dMenu"><div class="sh menu">
+  <div class="grab"></div>
+  <h3>אפשרויות</h3>
+  <button onclick="dMenu.close();manualDlg()"><i>＋</i>רישום ידני</button>
+  <button onclick="dMenu.close();renameDlg()"><i>✏️</i>שמות התינוקות</button>
+  <button onclick="dMenu.close();exportCSV()"><i>⬇️</i>ייצוא ל-CSV (אקסל)</button>
+  <button onclick="dMenu.close();syncLinkDlg()"><i>🔄</i>סנכרון בין מכשירים</button>
+  <p class="note" id="storeNote"></p>
+</div></dialog>
+
+<div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
+
+<script>
+const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
+const BIRTH=new Date(2026,10,10);
+const DEF={A:'תינוק א׳',B:'תינוק ב׳'};
+const H=36e5,DAY=864e5;
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+let data=[],tomb=[];function loadLog(){let a=load(KEY,[]);if(!Array.isArray(a))a=[];a=a.filter(e=>e&&e.id);data=a.filter(e=>!e.deleted);tomb=a.filter(e=>e.deleted)}loadLog();
+let names=Object.assign({},DEF,load(NKEY,{}));
+let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
+let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={};
+const $=id=>document.getElementById(id);
+const persist=()=>localStorage.setItem(KEY,JSON.stringify(data.concat(tomb)));
+const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end']);
+let known=new Map();const rebuildKnown=()=>{known=new Map(data.map(e=>[e.id,{s:sig(e),e:Object.assign({},e)}]))};rebuildKnown();
+/* save = persist + detect changed/added/removed records → stamp 'updated', keep tombstones, queue for sync */
+function save(){const now=Date.now(),seen=new Set();
+  for(const e of data){seen.add(e.id);const k=known.get(e.id),s=sig(e);
+    if(!k||k.s!==s){e.updated=Math.max(now,(k&&k.e.updated||0)+1);delete e.deleted;tomb=tomb.filter(x=>x.id!==e.id);enqueue(e)}
+    else if(e.updated==null&&k.e.updated!=null)e.updated=k.e.updated}
+  for(const[id,k]of known)if(!seen.has(id)){const d=Object.assign({},k.e,{deleted:1,updated:Math.max(now,(k.e.updated||0)+1)});tomb=tomb.filter(x=>x.id!==id);tomb.push(d);enqueue(d)}
+  persist();rebuildKnown()}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hm=t=>new Date(t).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit',hour12:false});
+const dmy=t=>{const d=new Date(t);return d.getDate()+'.'+(d.getMonth()+1)};
+const haptic=(p=12)=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const other=b=>b==='A'?'B':'A';
+const startOfDay=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const WD=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const WDS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+
+function since(ms){const m=Math.max(0,Math.floor(ms/60000));if(m<1)return{v:'עכשיו',u:''};if(m<60)return{v:m+'',u:'דק׳'};const h=Math.floor(m/60);return{v:h+':'+String(m%60).padStart(2,'0'),u:'שע׳'}}
+function sinceTxt(ms){const s=since(ms);return s.u?s.v+' '+s.u:s.v}
+function dur(ms){const m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);if(!h)return m+' דק׳';return h+' שע׳'+(m%60?' '+(m%60)+' דק׳':'')}
+function durShort(ms){const m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);return h+':'+String(m%60).padStart(2,'0')}
+function ageTxt(){const d=Math.round((startOfDay(Date.now())-BIRTH.getTime())/DAY);if(d<0)return'';if(d===0)return'נולדו היום · 10.11.2026';if(d===1)return'בני יום · נולדו 10.11.2026';if(d===2)return'בני יומיים · נולדו 10.11.2026';if(d<28)return'בני '+d+' ימים';const w=Math.floor(d/7),r=d%7;return'בני '+w+' שבועות'+(r?' ו-'+r+' ימים':'')}
+
+function isFeed(e){return e.type==='bottle'||e.type==='feed'}
+function lastOf(b,f){let r=null;for(const e of data)if(e.baby===b&&f(e)&&(!r||e.t>r.t))r=e;return r}
+function openSleep(b){return lastOf(b,e=>e.type==='sleep'&&!e.end)}
+function icon(e){if(e.type==='bottle'||e.type==='feed')return'🍼';if(e.type==='diaper')return e.kind==='קטנים'?'💧':'💩';if(e.type==='sleep')return'😴';return'•'}
+function icCls(e){if(e.type==='diaper')return e.kind==='קטנים'?'diaper':'poo';return e.type}
+function title(e){
+  if(e.type==='bottle')return'בקבוק · '+e.ml+' סמ״ק';
+  if(e.type==='feed')return'האכלה';
+  if(e.type==='diaper')return e.kind||'החלפה';
+  if(e.type==='sleep')return e.end?'שינה · '+dur(e.end-e.t):'שינה · עדיין ישן/ה';
+  return'רישום';
+}
+function subtitle(e){if(e.type==='sleep')return e.end?hm(e.t)+' – '+hm(e.end):'מ-'+hm(e.t);return''}
+
+function stats(b,from,to){
+  to=to||Date.now();
+  const inW=e=>e.baby===b&&e.t>=from&&e.t<to;
+  const bott=data.filter(e=>inW(e)&&e.type==='bottle');
+  const ml=bott.reduce((a,e)=>a+(+e.ml||0),0);
+  const dia=data.filter(e=>inW(e)&&e.type==='diaper');
+  const pee=dia.filter(e=>(e.kind||'').includes('קטנים')).length,poo=dia.filter(e=>(e.kind||'').includes('גדולים')).length;
+  let sl=0;for(const e of data){if(e.baby!==b||e.type!=='sleep')continue;const s=Math.max(e.t,from),en=Math.min(e.end||Date.now(),to);if(en>s)sl+=en-s}
+  const ts=bott.map(e=>e.t).sort((x,y)=>x-y);let gap=null;if(ts.length>1)gap=(ts[ts.length-1]-ts[0])/(ts.length-1);
+  return{n:bott.length,ml,avg:bott.length?Math.round(ml/bott.length):0,pee,poo,sl,gap,max:bott.reduce((a,e)=>Math.max(a,+e.ml||0),0)};
+}
+
+/* ---------- actions ---------- */
+function snap(){undoSnap=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=null}
+function commit(msg){if(undoSnap){const after=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=[...new Set([...undoSnap.keys(),...after.keys()])].filter(id=>undoSnap.get(id)!==after.get(id))}save();render();toast(msg,true);haptic(15)}
+function undo(){if(!undoSnap||!undoIds)return;for(const id of undoIds){const s=undoSnap.get(id),i=data.findIndex(e=>e.id===id);if(s){const r=JSON.parse(s);if(i>=0)data[i]=r;else data.push(r)}else if(i>=0)data.splice(i,1)}undoSnap=null;undoIds=null;save();render();toast('הפעולה בוטלה',false);haptic(8)}
+function who(bs){return bs.length>1?'לשניהם':'ל'+names[bs[0]]}
+function logBottle(bs,ml,t){snap();t=t||Date.now();bs.forEach(b=>data.push({id:uid(),baby:b,type:'bottle',t,ml}));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
+function logDiaper(bs,kind){snap();const t=Date.now();bs.forEach(b=>data.push({id:uid(),baby:b,type:'diaper',t,kind}));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
+function toggleSleep(b){snap();const s=openSleep(b),t=Date.now();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push({id:uid(),baby:b,type:'sleep',t});commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
+function sleepBoth(){snap();const t=Date.now(),sA=openSleep('A'),sB=openSleep('B');
+  if(sA&&sB){sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+hm(t))}
+  else{['A','B'].forEach(b=>{if(!openSleep(b))data.push({id:uid(),baby:b,type:'sleep',t})});commit('😴 שניהם נרדמו · '+hm(t))}}
+
+/* ---------- bottle sheet ---------- */
+const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
+function openBottle(target){bTarget=target||cur;
+  const lb=bTarget==='AB'?(lastOf('A',e=>e.type==='bottle')||lastOf('B',e=>e.type==='bottle')):lastOf(bTarget,e=>e.type==='bottle');
+  $('bMl').value=lb?lb.ml:'';$('bTime').value=hm(Date.now());renderBTarget();bSync();haptic(8);dBottle.showModal()}
+function renderBTarget(){seg('bTarget',[['A',names.A],['B',names.B],['AB','לשניהם']],bTarget,v=>{bTarget=v;renderBTarget()});$('bSave').textContent=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget]}
+function bSync(){const v=parseInt($('bMl').value);$('qs').innerHTML=AMOUNTS.map(a=>`<button class="q num${a===v?' on':''}" onclick="pickMl(${a})">${a}</button>`).join('');$('bSave').disabled=!(v>0)}
+function pickMl(a){$('bMl').value=a;bSync();haptic(6)}
+function stepMl(d){const v=Math.max(0,(parseInt($('bMl').value)||0)+d);$('bMl').value=v||'';bSync();haptic(5)}
+function timeFromInput(str){if(!str)return Date.now();const[h,m]=str.split(':').map(Number);const d=new Date();d.setHours(h,m,0,0);let t=d.getTime();if(t>Date.now()+60000)t-=DAY;if(Math.abs(t-Date.now())<60000)return Date.now();return t}
+function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,timeFromInput($('bTime').value))}
+
+/* ---------- segmented control ---------- */
+function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);cb(b.dataset.v)})}
+
+/* ---------- rendering ---------- */
+function tier(ms){const h=ms/H;if(h<2)return'var(--ok)';if(h<3)return'var(--mid)';return'var(--hot)'}
+function ring(b,size){const lf=lastOf(b,isFeed),r=size==='big'?52:42,c=2*Math.PI*r,vb=size==='big'?118:96,cx=vb/2;
+  let p=0,col='var(--line)',inner;
+  if(lf){const el=Date.now()-lf.t;p=Math.min(el/(4*H),1);col=tier(el);const s=since(el);
+    inner=`<div class="icon">🍼</div><div class="big num" data-since="${lf.t}">${s.v}</div><div class="lbl" data-sinceu="${lf.t}">${s.u?s.u+' מהבקבוק':'בקבוק אחרון'}</div>`}
+  else inner=`<div class="icon">🍼</div><div class="big" style="font-size:16px;color:var(--ink3)">—</div><div class="lbl">אין בקבוק עדיין</div>`;
+  return`<div class="ringWrap"><svg viewBox="0 0 ${vb} ${vb}"><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="var(--line)" stroke-width="8"/><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" style="transition:stroke-dasharray .6s ease"/></svg><div class="ringIn">${inner}</div></div>`}
+function sleepChip(b){const s=openSleep(b);if(s)return`<div class="chip sl"><span class="dot"></span>ישן/ה · <span class="num" data-timer="${s.t}">${durShort(Date.now()-s.t)}</span></div>`;
+  const ls=lastOf(b,e=>e.type==='sleep'&&e.end);return`<div class="chip"><span class="dot"></span>ער/ה${ls?' · <span class="num" data-timer="'+ls.end+'">'+durShort(Date.now()-ls.end)+'</span>':''}</div>`}
+
+function renderHome(){
+  $('twins').innerHTML=['A','B'].map(b=>{const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
+    return`<div class="glass tc ${b}">
+      <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'א':'ב'):esc((names[b]||'?').trim().charAt(0))}</span><b>${esc(names[b])}</b><span class="chev">‹</span></button>
+      <div onclick="openBaby('${b}')">${ring(b)}
+      <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>
+      <div class="subl num" style="margin-top:2px">היום: <b style="color:var(--c);font-size:14px">${stats(b,startOfDay(Date.now())).ml} סמ״ק</b></div>
+      ${sleepChip(b)}
+      <div class="mini">${ld?'החלפה: '+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>':'אין החלפות עדיין'}</div></div>
+      <div class="acts">
+        <button class="act" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
+        <button class="act${s?' on':''}" onclick="toggleSleep('${b}')"><i>${s?'☀️':'😴'}</i>${s?'התעורר/ה':'נרדם/ה'}</button>
+        <button class="act" onclick="logDiaper(['${b}'],'קטנים')"><i>💧</i>קטנים</button>
+        <button class="act" onclick="logDiaper(['${b}'],'גדולים')"><i>💩</i>גדולים</button>
+      </div></div>`}).join('');
+  const both=openSleep('A')&&openSleep('B');$('bothSleep').innerHTML=both?'<i>☀️</i>התעוררו':'<i>😴</i>נרדמו';
+  const from=Date.now()-DAY,a=stats('A',from),c=stats('B',from);
+  $('sumNow').textContent='עד '+hm(Date.now());
+  const has=data.some(e=>e.t>=from||(e.type==='sleep'&&(!e.end||e.end>=from)));
+  const row=(k,va,vb)=>`<div class="cmpRow"><div class="k">${k}</div><div class="v num">${va}</div><div class="v num">${vb}</div></div>`;
+  const mlU=v=>v+'<span class="u">סמ״ק</span>';
+  $('cmp').innerHTML=!has?empty('📋','עדיין אין רישומים ב-24 השעות האחרונות.<br>כל לחיצה על כפתור נרשמת עם השעה הנוכחית.'):
+    `<div class="cmpRow h"><div></div><div class="v A">${esc(names.A)}</div><div class="v B">${esc(names.B)}</div></div>`+
+    row('🍼 בקבוקים',a.n,c.n)+row('Σ סה״כ',mlU(a.ml),mlU(c.ml))+row('⌀ ממוצע',a.n?mlU(a.avg):'—',c.n?mlU(c.avg):'—')+
+    row('💧 קטנים',a.pee,c.pee)+row('💩 גדולים',a.poo,c.poo)+row('😴 שינה',a.sl?durShort(a.sl)+'<span class="u">שע׳</span>':'—',c.sl?durShort(c.sl)+'<span class="u">שע׳</span>':'—');
+  $('stripHome').innerHTML=stripHTML(['A','B']);
+}
+function empty(e,t){return`<div class="empty"><span class="e">${e}</span>${t}</div>`}
+
+function stripHTML(bs){
+  const now=Date.now(),from=now-DAY,W=340,Hh=30,x=t=>((Math.max(t,from)-from)/DAY)*W;
+  let any=false;
+  const rows=bs.map(b=>{let s='';
+    for(let i=0;i<=24;i+=6){s+=`<line x1="${(i/24*W).toFixed(1)}" y1="0" x2="${(i/24*W).toFixed(1)}" y2="${Hh}" stroke="var(--line)" stroke-width="1"/>`}
+    s=`<rect x="0" y="0" width="${W}" height="${Hh}" rx="9" fill="var(--line)" opacity=".55"/>`+s;
+    data.filter(e=>e.baby===b&&e.type==='sleep'&&(e.end||now)>from).forEach(e=>{any=true;const x1=x(e.t),x2=x(e.end||now);s+=`<rect x="${x1.toFixed(1)}" y="5" width="${Math.max(2,x2-x1).toFixed(1)}" height="${Hh-10}" rx="5" fill="var(--sleep)" opacity=".55"/>`});
+    data.filter(e=>e.baby===b&&e.type==='diaper'&&e.t>=from).forEach(e=>{any=true;s+=`<circle cx="${x(e.t).toFixed(1)}" cy="${Hh-6}" r="3" fill="${e.kind==='קטנים'?'var(--pee)':'var(--poo)'}"/>`});
+    data.filter(e=>e.baby===b&&isFeed(e)&&e.t>=from).forEach(e=>{any=true;const xx=x(e.t),hgt=e.ml?Math.min(Hh-8,6+e.ml/150*(Hh-12)):10;s+=`<rect x="${(xx-2).toFixed(1)}" y="${(Hh/2-hgt/2-3).toFixed(1)}" width="4" height="${hgt.toFixed(1)}" rx="2" fill="var(--milk)"/>`});
+    return`<div class="stripRow"><div class="nm"><span class="d" style="background:var(--${b==='A'?'a':'b'})"></span>${esc(names[b])}</div><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none">${s}</svg></div>`}).join('');
+  if(!any)return empty('🕒','הציר יתמלא ברגע שיהיו רישומים ב-24 השעות האחרונות.');
+  const lbl=[0,6,12,18,24].map(i=>i===24?'עכשיו':hm(from+i*H));
+  return rows+`<div class="axis num">${lbl.map(l=>`<span>${l}</span>`).join('')}</div><div class="legend"><span><i style="background:var(--milk)"></i>בקבוק</span><span><i style="background:var(--sleep);opacity:.6"></i>שינה</span><span><i style="background:var(--pee);border-radius:50%"></i>קטנים</span><span><i style="background:var(--poo);border-radius:50%"></i>גדולים</span></div>`;
+}
+
+function barsHTML(bs){
+  const today=startOfDay(Date.now()),days=[];for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);days.push(d.getTime())}
+  const vals=days.map((d,i)=>{const n=new Date(d);n.setDate(n.getDate()+1);return bs.map(b=>stats(b,d,n.getTime()).ml)});
+  const max=Math.max(0,...vals.flat());
+  if(!max)return empty('📊','אין עדיין בקבוקים להצגה בגרף.');
+  const W=340,Hh=170,top=18,bot=34,ch=Hh-top-bot,gw=W/7,bw=bs.length>1?Math.min(14,gw/3.2):Math.min(26,gw/2);
+  let s='';for(let g=0;g<=2;g++){const y=top+ch-ch*g/2;s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/>`}
+  days.forEach((d,i)=>{const cx=gw*i+gw/2;const dt=new Date(d);
+    vals[i].forEach((v,j)=>{const h=v/max*ch,bx=bs.length>1?cx+(j===0?-bw-2:2):cx-bw/2,col=bs[j]==='A'?'var(--a)':'var(--b)';
+      if(v>0){s+=`<rect x="${bx.toFixed(1)}" y="${(top+ch-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,2).toFixed(1)}" rx="${Math.min(6,bw/2)}" fill="${col}"><animate attributeName="height" from="0" to="${Math.max(h,2).toFixed(1)}" dur=".5s"/><animate attributeName="y" from="${top+ch}" to="${(top+ch-h).toFixed(1)}" dur=".5s"/></rect>`;
+        s+=`<text x="${(bx+bw/2).toFixed(1)}" y="${(top+ch-h-4).toFixed(1)}" font-size="${bs.length>1?8:9.5}" font-weight="700" text-anchor="middle" fill="var(--ink2)">${v}</text>`}});
+    const isT=d===today;
+    s+=`<text x="${cx}" y="${Hh-18}" font-size="11" font-weight="${isT?800:600}" text-anchor="middle" fill="${isT?'var(--ink)':'var(--ink3)'}">${isT?'היום':WDS[dt.getDay()]}</text><text x="${cx}" y="${Hh-5}" font-size="9.5" text-anchor="middle" fill="var(--ink3)">${dmy(d)}</text>`});
+  const lg=bs.length>1?`<div class="legend" style="justify-content:center"><span><i style="background:var(--a)"></i>${esc(names.A)}</span><span><i style="background:var(--b)"></i>${esc(names.B)}</span></div>`:'';
+  return`<svg viewBox="0 0 ${W} ${Hh}" font-family="inherit">${s}</svg>`+lg;
+}
+
+function itemHTML(e,showBaby){return`<button class="it" onclick="editDlg('${e.id}')"><span class="tm num">${hm(e.t)}</span><span class="ic ${icCls(e)}">${icon(e)}</span><span class="tx"><b>${esc(title(e))}</b>${subtitle(e)?'<small class="num">'+subtitle(e)+'</small>':''}</span>${showBaby?`<span class="bp ${e.baby}">${esc(names[e.baby])}</span>`:''}</button>`}
+
+function renderBaby(){
+  const b=cur;seg('babySeg',[['A',names.A],['B',names.B]],b,v=>{cur=v;localStorage.setItem(CKEY,v);render()});
+  const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
+  $('hero').className='glass hero '+b;
+  $('hero').innerHTML=ring(b,'big')+`<div class="heroInfo"><h3>${esc(names[b])}</h3>
+    <p>🍼 ${lf?(lf.type==='bottle'?'<b style="color:var(--ink)">'+lf.ml+' סמ״ק</b> · ':'')+'ב-'+hm(lf.t):'אין בקבוק עדיין'}</p>
+    <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>':'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}</div>`;
+  $('bigActs').innerHTML=`<button class="bigAct milk" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
+    <button class="bigAct pee" onclick="logDiaper(['${b}'],'קטנים')"><i>💧</i>קטנים</button>
+    <button class="bigAct poo" onclick="logDiaper(['${b}'],'גדולים')"><i>💩</i>גדולים</button>
+    <button class="bigAct ${s?'wake':'slp'}" onclick="toggleSleep('${b}')"><i>${s?'☀️':'😴'}</i>${s?'התעורר/ה':'נרדם/ה'}</button>`;
+  const st=stats(b,Date.now()-DAY);
+  const tile=(v,l)=>`<div class="glass tile"><b class="num">${v}</b><span>${l}</span></div>`;
+  $('tiles').innerHTML=tile(st.n,'בקבוקים')+tile(st.ml,'סמ״ק סה״כ')+tile(st.n?st.avg:'—','ממוצע סמ״ק')+tile(st.pee,'💧 קטנים')+tile(st.poo,'💩 גדולים')+tile(st.sl?durShort(st.sl):'—','😴 שעות שינה')+
+    tile(st.gap?durShort(st.gap):'—','מרווח ממוצע')+tile(st.max||'—','בקבוק גדול')+tile(stats(b,startOfDay(Date.now())).ml,'סמ״ק היום');
+  $('stripBaby').innerHTML=stripHTML([b]);
+  $('barsBaby').innerHTML=barsHTML([b]);
+  const items=data.filter(e=>e.baby===b).sort((x,y)=>y.t-x.t).slice(0,30);
+  $('babyList').innerHTML=items.length?items.map(e=>itemHTML(e,false).replace('<span class="tm num">','<span class="tm num" title="'+dmy(e.t)+'">')).join(''):empty('🌙','אין רישומים עדיין ל'+esc(names[b])+'.');
+}
+
+function dayLabel(d){const t=startOfDay(Date.now());if(d===t)return'היום';if(d===t-DAY||Math.round((t-d)/DAY)===1)return'אתמול';return'יום '+WD[new Date(d).getDay()]}
+function renderLog(){
+  seg('filterSeg',[['all','שניהם'],['A',names.A],['B',names.B]],filter,v=>{filter=v;renderLog()});
+  const items=data.filter(e=>filter==='all'||e.baby===filter).sort((x,y)=>y.t-x.t);
+  if(!items.length){$('timeline').innerHTML='<div class="glass" style="margin-top:14px">'+empty('📒','היומן ריק. רישומים יופיעו כאן לפי ימים.')+'</div>';return}
+  const groups=new Map();items.forEach(e=>{const k=startOfDay(e.t);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)});
+  let h='';groups.forEach((arr,k)=>{const mlOf=b=>arr.filter(e=>e.type==='bottle'&&e.baby===b).reduce((a,e)=>a+(+e.ml||0),0);
+    const tot=(filter==='all'?['A','B']:[filter]).map(b=>`<span style="color:var(--${b==='A'?'a':'b'});font-weight:700">${esc(names[b])} ${mlOf(b)} סמ״ק</span>`).join(' · ');
+    h+=`<div class="day"><div class="dayH"><b>${dayLabel(k)} · <span class="num" style="color:var(--ink2);font-size:13px">${dmy(k)}</span></b><span class="num">${tot}</span></div><div class="glass list">${arr.map(e=>itemHTML(e,filter==='all')).join('')}</div></div>`});
+  $('timeline').innerHTML=h;
+}
+
+function renderStats(){
+  $('bars').innerHTML=barsHTML(['A','B']);
+  $('stripStats').innerHTML=stripHTML(['A','B']);
+  const today=startOfDay(Date.now());let rows='';
+  for(let i=0;i<7;i++){const d=new Date(today);d.setDate(d.getDate()-i);const s=d.getTime(),n=new Date(s);n.setDate(n.getDate()+1);
+    const a=stats('A',s,n.getTime()),b=stats('B',s,n.getTime());if(!a.n&&!b.n&&!a.pee&&!b.pee&&!a.poo&&!b.poo&&!a.sl&&!b.sl)continue;
+    const cell=x=>`${x.ml}<span class="u">סמ״ק</span><div style="font-size:11px;color:var(--ink3);font-weight:600">${x.n} בק׳ · ${x.pee}💧 ${x.poo}💩</div>`;
+    rows+=`<div class="cmpRow"><div class="k"><b style="color:var(--ink)">${dayLabel(s)}</b>&nbsp;<span class="num">${dmy(s)}</span></div><div class="v num">${cell(a)}</div><div class="v num">${cell(b)}</div></div>`}
+  $('daily').innerHTML=rows?`<div class="cmpRow h"><div></div><div class="v A">${esc(names.A)}</div><div class="v B">${esc(names.B)}</div></div>`+rows:empty('🗓️','אין עדיין נתונים לסיכום יומי.');
+}
+
+function render(){
+  $('age').textContent=ageTxt();
+  if(view==='home')renderHome();else if(view==='baby')renderBaby();else if(view==='log')renderLog();else renderStats();
+  document.querySelectorAll('.navIn button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+}
+function go(v){view=v;document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));render();window.scrollTo({top:0,behavior:'smooth'});haptic(5)}
+function openBaby(b){cur=b;localStorage.setItem(CKEY,b);go('baby')}
+
+/* live timers */
+function tick(){
+  $('clock').textContent=hm(Date.now());const now=Date.now();
+  document.querySelectorAll('[data-since]').forEach(el=>{el.textContent=since(now-+el.dataset.since).v});
+  document.querySelectorAll('[data-sinceu]').forEach(el=>{const s=since(now-+el.dataset.sinceu);el.textContent=s.u?s.u+' מהבקבוק':'בקבוק אחרון'});
+  document.querySelectorAll('[data-timer]').forEach(el=>{el.textContent=durShort(now-+el.dataset.timer)});
+  document.querySelectorAll('[data-ago]').forEach(el=>{el.textContent=sinceTxt(now-+el.dataset.ago)});
+}
+
+/* toast */
+function toast(msg,canUndo){const t=$('toast');$('toastTx').textContent=msg;$('toastUndo').style.display=canUndo?'':'none';t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>{t.classList.remove('show');if(canUndo){undoSnap=null;undoIds=null}},canUndo?6000:2200)}
+
+/* edit / manual */
+const toLocal=t=>{const d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+function renderEdit(){
+  seg('eBaby',[['A',names.A],['B',names.B]],eState.baby,v=>{eState.baby=v;renderEdit()});
+  seg('eType',[['bottle','🍼 בקבוק'],['diaper','🧷 החלפה'],['sleep','😴 שינה']],eState.type,v=>{eState.type=v;renderEdit()});
+  seg('eKind',[['קטנים','💧 קטנים'],['גדולים','💩 גדולים'],['קטנים + גדולים','שניהם']],eState.kind,v=>{eState.kind=v;renderEdit()});
+  const t=eState.type;$('fMl').style.display=t==='bottle'?'':'none';$('fKind').style.display=t==='diaper'?'':'none';$('fEnd').style.display=t==='sleep'?'':'none';$('lTime').textContent=t==='sleep'?'שעת הירדמות':'שעה';
+}
+function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים'};
+  $('eTitle').textContent='עריכת רישום';$('eDel').style.display='';$('eMl').value=e.ml||'';$('eTime').value=toLocal(e.t);$('eEnd').value=e.end?toLocal(e.end):'';renderEdit();haptic(6);dEdit.showModal()}
+function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים'};
+  $('eTitle').textContent='רישום ידני';$('eDel').style.display='none';$('eMl').value='';$('eTime').value=toLocal(Date.now());$('eEnd').value='';renderEdit();dEdit.showModal()}
+function saveEdit(){
+  const t=eState.type,e={id:editId||uid(),baby:eState.baby,type:t,t:new Date($('eTime').value).getTime()};
+  if(isNaN(e.t)){alert('שעה לא תקינה');return}
+  if(t==='bottle'){e.ml=parseInt($('eMl').value);if(!(e.ml>0)){alert('צריך להזין כמות בסמ״ק');return}}
+  if(t==='diaper')e.kind=eState.kind;
+  if(t==='sleep'&&$('eEnd').value){e.end=new Date($('eEnd').value).getTime();if(e.end<e.t){alert('שעת ההתעוררות לפני שעת ההירדמות');return}}
+  snap();if(editId){const i=data.findIndex(x=>x.id===editId);if(i>=0)data[i]=e;else data.push(e)}else data.push(e);
+  dEdit.close();commit(editId?'✓ הרישום עודכן':'✓ נוסף רישום ל'+names[e.baby]);
+}
+function delEdit(){if(!confirm('למחוק את הרישום?'))return;snap();data=data.filter(x=>x.id!==editId);dEdit.close();commit('🗑️ הרישום נמחק')}
+
+/* names / menu / export */
+function renameDlg(){$('nA').value=names.A;$('nB').value=names.B;dNames.showModal()}
+function saveNames(){names={A:$('nA').value.trim()||DEF.A,B:$('nB').value.trim()||DEF.B,updated:Date.now()};localStorage.setItem(NKEY,JSON.stringify(names));if(sync){sync.namesPending=1;saveSync();syncSoon()}dNames.close();render();toast('✓ השמות נשמרו',false)}
+function openMenu(){$('storeNote').textContent=sync?('הנתונים מסונכרנים בין המכשירים ('+data.length+' רישומים)'+(syncState==='ok'?'.':syncState==='err'?' · שגיאת הרשאה בסנכרון.':' · ממתין לחיבור.')):('הנתונים נשמרים רק בדפדפן הזה, במכשיר הזה ('+data.length+' רישומים). מומלץ לייצא מדי פעם ל-CSV לגיבוי.');dMenu.showModal();haptic(5)}
+function exportCSV(){
+  const tl={feed:'האכלה',bottle:'בקבוק',diaper:'החלפה',sleep:'שינה'};
+  const f=t=>{if(!t)return'';const d=new Date(t);return d.toLocaleDateString('he-IL')+' '+hm(t)};
+  const rows=[['תינוק','סוג','פרט','כמות סמ״ק','שעה','סיום שינה','משך שינה (דק׳)']].concat(
+    data.slice().sort((a,b)=>a.t-b.t).map(e=>[names[e.baby]||e.baby,tl[e.type]||e.type,e.kind||'',e.ml||'',f(e.t),f(e.end),e.end?Math.round((e.end-e.t)/60000):'']));
+  const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const d=new Date();a.download='twins-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('⬇️ הקובץ יוצא',false);
+}
+
+/* close sheets on backdrop tap */
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadLog();rebuildKnown();render();tick();syncSoon()}});
+window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
+
+/* app icon (PNG for iOS home screen) */
+(function(){if(location.protocol!=='file:')return;try{const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,180,180);g.addColorStop(0,'#4a9a8e');g.addColorStop(1,'#c46f90');x.fillStyle=g;x.fillRect(0,0,180,180);
+  x.fillStyle='rgba(255,255,255,.95)';x.beginPath();x.arc(66,94,28,0,7);x.fill();x.fillStyle='rgba(255,255,255,.72)';x.beginPath();x.arc(114,94,28,0,7);x.fill();
+  $('appleIcon').href=c.toDataURL('image/png')}catch(e){}})();
+
+
+/* ---------- sync (optional; Google Apps Script web app) ---------- */
+const SKEY='twins_sync_v1',QKEY='twins_queue_v1';
+let sync=load(SKEY,null);if(!sync||!sync.u||!sync.k)sync=null;
+let queue=load(QKEY,{})||{},syncState='',syncBusy=false,syncAgain=false,syncTimer=null,syncFail=0;
+const saveSync=()=>sync?localStorage.setItem(SKEY,JSON.stringify(sync)):localStorage.removeItem(SKEY);
+const saveQ=()=>localStorage.setItem(QKEY,JSON.stringify(queue));
+function setDot(s){syncState=s;const d=$('syncDot');d.className=sync?'on '+s:'';d.title={ok:'מסונכרן',busy:'מסנכרן…',off:'אין חיבור – יסונכרן אוטומטית',err:'שגיאת הרשאה בסנכרון'}[s]||''}
+function enqueue(r){if(!sync)return;queue[r.id]=Object.assign({},r);saveQ();syncSoon()}
+function syncSoon(ms){if(!sync)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,ms==null?300:ms)}
+function cleanRec(r){const n={id:String(r.id),baby:r.baby==='B'?'B':'A',type:String(r.type),t:+r.t||0,updated:+r.updated||0};
+  if(r.ml!=null&&r.ml!=='')n.ml=+r.ml;if(r.kind)n.kind=String(r.kind);if(r.end)n.end=+r.end;if(+r.deleted===1)n.deleted=1;return n}
+async function api(body){
+  const res=await fetch(sync.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:sync.k},body)),redirect:'follow',cache:'no-store'});
+  const j=await res.json();if(!j||!j.ok){const err=new Error(j&&j.error||'error');err.auth=j&&j.error==='auth';throw err}return j}
+function mergeRemote(recs){let changed=false;
+  for(const raw of recs||[]){if(!raw||!raw.id)continue;const r=cleanRec(raw);
+    const loc=data.find(e=>e.id===r.id)||tomb.find(e=>e.id===r.id);
+    if(loc&&(loc.updated||0)>=r.updated)continue;
+    if(queue[r.id]&&(queue[r.id].updated||0)>=r.updated)continue;
+    data=data.filter(e=>e.id!==r.id);tomb=tomb.filter(e=>e.id!==r.id);(r.deleted?tomb:data).push(r);changed=true}
+  if(changed){persist();rebuildKnown()}return changed}
+function applyNames(n){if(!n||!sync||sync.namesPending)return false;if((+n.updated||0)<=(+names.updated||0))return false;
+  names={A:n.A||DEF.A,B:n.B||DEF.B,updated:+n.updated};localStorage.setItem(NKEY,JSON.stringify(names));return true}
+async function syncNow(){
+  if(!sync)return;if(syncBusy){syncAgain=true;return}
+  syncBusy=true;clearTimeout(syncTimer);setDot('busy');
+  try{
+    const recs=Object.values(queue);
+    if(recs.length){const sent=recs.map(r=>Object.assign({},r,{updated:r.updated||r.t||1}));
+      await api({op:'upsert',records:sent});
+      sent.forEach(r=>{const q=queue[r.id];if(q&&(q.updated||q.t||1)===r.updated)delete queue[r.id]});saveQ()}
+    if(sync.namesPending){const j=await api({op:'setNames',names:{A:names.A,B:names.B,updated:names.updated||Date.now()}});sync.namesPending=0;saveSync();applyNames(j.names)}
+    const j=await api({op:'list',since:Math.max(0,(sync.since||0)-60000)});
+    let ch=mergeRemote(j.records);if(applyNames(j.names))ch=true;
+    sync.since=+j.now||sync.since;saveSync();syncFail=0;
+    if(ch)render();
+    setDot(Object.keys(queue).length?'busy':'ok');
+  }catch(e){syncFail++;setDot(e.auth?'err':'off')}
+  finally{syncBusy=false;
+    if(syncAgain){syncAgain=false;syncSoon(50)}
+    else syncSoon(syncFail?Math.min(60000,5000*syncFail):20000)}
+}
+function startSync(cfg){
+  const first=!sync||sync.u!==cfg.u||sync.k!==cfg.k;
+  sync=Object.assign({},first?{}:sync,{u:cfg.u,k:cfg.k});
+  if(first){sync.since=0;queue={};data.concat(tomb).forEach(r=>{queue[r.id]=Object.assign({},r,{updated:r.updated||r.t||1})});saveQ();if(names.updated)sync.namesPending=1}
+  saveSync();setDot('busy');syncSoon(50)}
+function parseSyncLink(s){try{const i=s.indexOf('#');if(i<0)return null;const p=new URLSearchParams(s.slice(i+1));const u=p.get('u'),k=p.get('k');
+  if(u==='off')return{off:1};if(u&&k&&/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)[:/])/.test(u))return{u,k}}catch(e){}return null}
+function syncLinkDlg(){const s=prompt(sync?'הסנכרון פעיל. להחלפה – הדביקו קישור סנכרון חדש:':'הדביקו את קישור הסנכרון שקיבלתם:');if(!s)return;
+  const c=parseSyncLink(s.trim());if(!c){alert('הקישור לא תקין');return}
+  if(c.off){sync=null;saveSync();setDot('');toast('הסנכרון כובה',false);return}
+  startSync(c);toast('🔄 הסנכרון הופעל',false)}
+function readSyncHash(){
+  const c=parseSyncLink(location.href);
+  if(location.hash&&/[#&](u|k)=/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
+  if(c&&c.off){sync=null;saveSync();setDot('')}else if(c)startSync(c)}
+(function initSync(){
+  readSyncHash();
+  if(sync){setDot(Object.keys(queue).length?'busy':'ok');syncSoon(100)}
+  window.addEventListener('hashchange',readSyncHash);
+  window.addEventListener('online',()=>syncSoon(100));
+  window.addEventListener('focus',()=>syncSoon(100));
+})();
+
+tick();render();setInterval(tick,1000);setInterval(render,60000);
+</script>
+</body>
+</html>
