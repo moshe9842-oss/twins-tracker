@@ -309,8 +309,8 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
 <dialog class="sheet" id="dNames"><div class="sh">
   <div class="grab"></div>
   <h3>שמות התינוקות</h3>
-  <label class="fl">תינוק א׳</label><input class="f" id="nA" autocomplete="off">
-  <label class="fl">תינוק ב׳</label><input class="f" id="nB" autocomplete="off">
+  <label class="fl">הבן</label><input class="f" id="nA" autocomplete="off">
+  <label class="fl">הבת</label><input class="f" id="nB" autocomplete="off">
   <div class="btns"><button class="pri" onclick="saveNames()">שמירה</button><button onclick="dNames.close()">ביטול</button></div>
 </div></dialog>
 
@@ -330,11 +330,11 @@ input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid va
 <script>
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH=new Date(2026,10,10);
-const DEF={A:'תינוק א׳',B:'תינוק ב׳'};
+const DEF={A:'בן',B:'בת'};const OLDDEF={A:'תינוק א׳',B:'תינוק ב׳'};
 const H=36e5,DAY=864e5;
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
 let data=[],tomb=[];function loadLog(){let a=load(KEY,[]);if(!Array.isArray(a))a=[];a=a.filter(e=>e&&e.id);data=a.filter(e=>!e.deleted);tomb=a.filter(e=>e.deleted)}loadLog();
-let names=Object.assign({},DEF,load(NKEY,{}));
+let names=Object.assign({},DEF,load(NKEY,{}));['A','B'].forEach(b=>{if(names[b]===OLDDEF[b])names[b]=DEF[b]});
 let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
 let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={};
 const $=id=>document.getElementById(id);
@@ -432,7 +432,7 @@ function sleepChip(b){const s=openSleep(b);if(s)return`<div class="chip sl"><spa
 function renderHome(){
   $('twins').innerHTML=['A','B'].map(b=>{const lf=lastOf(b,isFeed),ld=lastOf(b,e=>e.type==='diaper'),s=openSleep(b);
     return`<div class="glass tc ${b}">
-      <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'א':'ב'):esc((names[b]||'?').trim().charAt(0))}</span><b>${esc(names[b])}</b><span class="chev">‹</span></button>
+      <button class="tcHead" onclick="openBaby('${b}')"><span class="av">${names[b]===DEF[b]?(b==='A'?'👦':'👧'):esc((names[b]||'?').trim().charAt(0))}</span><b>${esc(names[b])}</b><span class="chev">‹</span></button>
       <div onclick="openBaby('${b}')">${ring(b)}
       <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>
       <div class="subl num" style="margin-top:2px">היום: <b style="color:var(--c);font-size:14px">${stats(b,startOfDay(Date.now())).ml} סמ״ק</b></div>
@@ -627,7 +627,7 @@ function mergeRemote(recs){let changed=false;
     data=data.filter(e=>e.id!==r.id);tomb=tomb.filter(e=>e.id!==r.id);(r.deleted?tomb:data).push(r);changed=true}
   if(changed){persist();rebuildKnown()}return changed}
 function applyNames(n){if(!n||!sync||sync.namesPending)return false;if((+n.updated||0)<=(+names.updated||0))return false;
-  names={A:n.A||DEF.A,B:n.B||DEF.B,updated:+n.updated};localStorage.setItem(NKEY,JSON.stringify(names));return true}
+  names={A:(n.A&&n.A!==OLDDEF.A)?n.A:DEF.A,B:(n.B&&n.B!==OLDDEF.B)?n.B:DEF.B,updated:+n.updated};localStorage.setItem(NKEY,JSON.stringify(names));return true}
 async function syncNow(){
   if(!sync)return;if(syncBusy){syncAgain=true;return}
   syncBusy=true;clearTimeout(syncTimer);setDot('busy');
