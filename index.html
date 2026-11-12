@@ -34,10 +34,11 @@
   --sleep:#9a92ec;--sleep2:rgba(154,146,236,.14);--pee:#5cbde0;--poo:#c89c68;--milk:#74a7f0;
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100dvh;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;height:100%;min-height:100dvh;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none}
+html{overflow:hidden}
 input,select,textarea{font-size:16px}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Hebrew","Segoe UI","Heebo","Assistant",Roboto,Arial,sans-serif;color:var(--ink);
-  background:var(--bg1);-webkit-font-smoothing:antialiased;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain}
+  background:var(--bg1);-webkit-font-smoothing:antialiased;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(120% 60% at 100% 0%,var(--a2) 0%,transparent 60%),radial-gradient(120% 60% at 0% 10%,var(--b2) 0%,transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2))}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
@@ -172,8 +173,9 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
 .empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
 /* nav */
-nav{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:80;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;box-sizing:border-box;transform:none;filter:none;contain:none;will-change:auto}
+nav{position:fixed;left:0;right:0;bottom:0;width:100%;margin:0;z-index:80;padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;box-sizing:border-box;transform:none;filter:none;contain:none;will-change:auto;background:var(--card);border-top:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3)}
 .navIn{display:flex;gap:4px;padding:6px;border-radius:24px;width:100%;max-width:420px}
+nav .navIn.glass{background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 .navIn button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:18px;font-size:11.5px;font-weight:700;color:var(--ink3);transition:background .2s,color .2s}
 .navIn button svg{width:22px;height:22px;stroke:currentColor}
 .navIn button.on{color:var(--ink);background:var(--card2);box-shadow:0 2px 10px rgba(0,0,0,.06)}
@@ -434,8 +436,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
-const BUILD='v14-20261112-1025';
-const BUILD_LABEL='גרסה 14 · 12.11.2026';
+const BUILD='v15-20261112-1653';
+const BUILD_LABEL='גרסה 15 · 12.11.2026';
 
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
