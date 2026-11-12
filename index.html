@@ -33,18 +33,21 @@
   --sleep:#9a92ec;--sleep2:rgba(154,146,236,.14);--pee:#5cbde0;--poo:#c89c68;--milk:#74a7f0;
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{height:100%;height:100dvh}
+html,body{margin:0;min-height:100%;min-height:100dvh;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 input,select,textarea{font-size:16px}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Hebrew","Segoe UI","Heebo","Assistant",Roboto,Arial,sans-serif;color:var(--ink);
-  background:radial-gradient(120% 60% at 100% 0%,var(--a2) 0%,transparent 60%),radial-gradient(120% 60% at 0% 10%,var(--b2) 0%,transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2));
-  background-attachment:fixed;-webkit-font-smoothing:antialiased;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+  background:var(--bg1);-webkit-font-smoothing:antialiased;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(120% 60% at 100% 0%,var(--a2) 0%,transparent 60%),radial-gradient(120% 60% at 0% 10%,var(--b2) 0%,transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2))}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
 button:focus{outline:none}button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
 .seg button:focus-visible{outline:none}
 .num{font-variant-numeric:tabular-nums}
 /* header */
 .top{position:sticky;top:0;z-index:20;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;display:flex;align-items:center;justify-content:space-between;
-  background:linear-gradient(180deg,var(--bg1) 60%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  background:linear-gradient(180deg,var(--bg1) 72%,transparent)}
+
 .brand{display:flex;align-items:center;gap:10px}
 .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;box-shadow:0 6px 16px rgba(192,104,138,.25)}
 .brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.2px}
@@ -58,7 +61,7 @@ button:focus{outline:none}button:focus-visible{outline:2px solid var(--a);outlin
 main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .view{display:none;animation:fade .35s ease}
 .view.on{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 .sec{margin:20px 4px 10px;display:flex;align-items:baseline;justify-content:space-between}
 .sec h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.1px}
 .sec span{font-size:12.5px;color:var(--ink3)}
@@ -169,7 +172,7 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
 .empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
 /* nav */
-nav{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:8px 16px calc(10px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+nav{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:80;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;box-sizing:border-box}
 .navIn{display:flex;gap:4px;padding:6px;border-radius:24px;width:100%;max-width:420px}
 .navIn button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:18px;font-size:11.5px;font-weight:700;color:var(--ink3);transition:background .2s,color .2s}
 .navIn button svg{width:22px;height:22px;stroke:currentColor}
@@ -822,6 +825,13 @@ document.addEventListener('gesturechange',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait').catch(()=>{})}catch(e){}
 
+(function pinNav(){const n=document.querySelector('nav');if(!n)return;
+  const place=()=>{const vv=window.visualViewport;const gap=vv?Math.max(0,window.innerHeight-(vv.offsetTop+vv.height)):0;n.style.bottom=gap?gap+'px':''};
+  place();
+  if(window.visualViewport){visualViewport.addEventListener('resize',place);visualViewport.addEventListener('scroll',place)}
+  window.addEventListener('resize',place);
+  window.addEventListener('orientationchange',()=>setTimeout(place,80));
+})();
 tick();render();setInterval(tick,1000);setInterval(render,60000);
 if(!me)setTimeout(whoDlg,400);
 </script>
