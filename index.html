@@ -178,11 +178,11 @@ nav{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:80;padding:8px 16p
 .navIn button svg{width:22px;height:22px;stroke:currentColor}
 .navIn button.on{color:var(--ink);background:var(--card2);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 /* sheets */
-dialog.sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:560px;max-height:92vh;border-radius:28px 28px 0 0;background:var(--card2);color:var(--ink);box-shadow:0 -10px 40px rgba(0,0,0,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+dialog.sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:560px;max-height:92dvh;overflow:hidden;border-radius:28px 28px 0 0;background:var(--card2);color:var(--ink);box-shadow:0 -10px 40px rgba(0,0,0,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 dialog.sheet[open]{animation:up .32s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 dialog::backdrop{background:rgba(12,14,24,.42);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
-.sh{padding:10px 18px calc(18px + env(safe-area-inset-bottom))}
+.sh{padding:10px 18px calc(18px + env(safe-area-inset-bottom));overflow-y:auto;max-height:92dvh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;box-sizing:border-box}
 .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px;background:var(--ink3);opacity:.35}
 .sh h3{margin:0 0 14px;font-size:19px;font-weight:800;text-align:center}
 .fl{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin:14px 2px 7px}
@@ -197,7 +197,7 @@ dialog::backdrop{background:rgba(12,14,24,.42);backdrop-filter:blur(3px);-webkit
 .step .val small{display:block;font-size:12px;color:var(--ink3);margin-top:-4px}
 input.f,select.f{width:100%;padding:13px 14px;font-size:17px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none;min-height:50px}
 select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239aa0ad' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 16px center;padding-left:36px}
-.btns{display:flex;gap:10px;margin-top:20px}
+.btns{display:flex;gap:10px;margin-top:14px}
 .btns button{flex:1;padding:15px;border-radius:16px;font-size:16.5px;font-weight:800;background:var(--line)}
 .btns .pri{background:linear-gradient(135deg,var(--a),#2f7268);color:#fff;flex:2}
 .btns .pri:disabled{opacity:.4}
@@ -229,7 +229,21 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .nudge,.timeClr{padding:7px 11px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink2);background:var(--card);border:1px solid var(--line)}
 .timeClr{width:32px;height:32px;padding:0;font-size:18px;display:none;place-items:center;line-height:1}
 .timeClr.on{display:grid}
-#tDate{margin-top:8px}
+.whenRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.whenRow input{direction:ltr;min-height:46px;padding:10px 12px}
+#dBottle .grab{margin:0 auto 8px}
+#dBottle .sh h3{margin:0 0 8px}
+#dBottle .fl{margin:8px 2px 5px}
+#dBottle .qs{gap:6px}
+#dBottle .q{padding:10px 0}
+#dBottle .step{margin-top:8px}
+#dBottle .tQuick{margin-top:6px;gap:6px}
+#dBottle .tQuick button{padding:9px 0}
+#dBottle .note{margin:6px 4px 0}
+#dBottle .step button{width:44px;height:44px}
+#dBottle .btns{flex-wrap:nowrap;margin-top:8px}
+#dBottle .btns .pri{flex:2 1 auto;white-space:nowrap;padding:12px 8px;font-size:14.5px}
+#dBottle .btns button:not(.pri){flex:0 0 auto;min-width:88px;padding:12px 14px;font-weight:700}
 .tQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .tQuick button{padding:13px 0;border-radius:14px;background:var(--line);font-size:15px;font-weight:800}
 .tQuick button:active,.nudge:active,.timeChip:active,.timeClr:active,.mlStep button:active{transform:scale(.95)}
@@ -328,8 +342,12 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="val"><input id="bMl" class="num" type="number" inputmode="numeric" step="1" min="1" placeholder="—" oninput="bSync()"><small>סמ״ק</small></div>
     <button onclick="stepMl(-1)" aria-label="הפחת סמ״ק">−1</button>
   </div>
-  <label class="fl">שעה</label>
-  <input class="f num" id="bTime" type="time" oninput="paintBHint()">
+  <label class="fl">מתי</label>
+  <div class="seg" id="bDaySeg"></div>
+  <div class="whenRow">
+    <input class="f num" id="bDate" dir="ltr" type="date" oninput="onBDate()" onchange="onBDate()" onblur="onBDate()">
+    <input class="f num" id="bTime" dir="ltr" type="time" oninput="onBTime()" onchange="onBTime()" onblur="onBTime()">
+  </div>
   <div class="tQuick">
     <button type="button" onclick="setBTime(null)">עכשיו</button>
     <button type="button" onclick="nudgeBTime(-15)">−15 ד׳</button>
@@ -345,9 +363,10 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <h3>שעת הרישום</h3>
   <label class="fl">יום</label>
   <div class="seg" id="tDaySeg"></div>
-  <input class="f num" id="tDate" type="date" oninput="onTDate()">
-  <label class="fl">שעה</label>
-  <input class="f num" id="tTime" type="time" oninput="paintTHint()">
+  <div class="whenRow">
+    <input class="f num" id="tDate" dir="ltr" type="date" oninput="onTDate()" onchange="onTDate()" onblur="onTDate()">
+    <input class="f num" id="tTime" dir="ltr" type="time" oninput="paintTHint()" onchange="paintTHint()" onblur="paintTHint()">
+  </div>
   <div class="tQuick">
     <button type="button" onclick="applyNow()">עכשיו</button>
     <button type="button" onclick="nudgeTimeField(-15)">−15 ד׳</button>
@@ -504,7 +523,7 @@ const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
 function openBottle(target){bTarget=target||cur;
   const lb=bTarget==='AB'?(lastOf('A',e=>e.type==='bottle')||lastOf('B',e=>e.type==='bottle')):lastOf(bTarget,e=>e.type==='bottle');
   $('bMl').value=lb?lb.ml:'';setBTime(logTime());renderBTarget();bSync();haptic(8);dBottle.showModal()}
-function renderBTarget(){seg('bTarget',[['A',names.A],['B',names.B],['AB','לשניהם']],bTarget,v=>{bTarget=v;renderBTarget()});$('bSave').textContent=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget]}
+function renderBTarget(){seg('bTarget',[['A',names.A],['B',names.B],['AB','לשניהם']],bTarget,v=>{bTarget=v;renderBTarget()});paintBSave()}
 function bSync(){const v=parseInt($('bMl').value);$('qs').innerHTML=AMOUNTS.map(a=>`<button class="q num${a===v?' on':''}" onclick="pickMl(${a})">${a}</button>`).join('');$('bSave').disabled=!(v>0)}
 function pickMl(a){$('bMl').value=a;bSync();haptic(6)}
 function stepMl(d){const v=Math.max(0,(parseInt($('bMl').value)||0)+d);$('bMl').value=v||'';bSync();haptic(5)}
@@ -524,7 +543,7 @@ function logTime(){return logAt==null?Date.now():logAt}
 function setLogAt(t){if(t==null||(Math.abs(t-Date.now())<60000&&daysAgo(t)===0))logAt=null;else logAt=clampAt(t);syncTimeUI()}
 function atLabel(t){const now=Date.now();t=t==null?now:t;if(logAt==null||(Math.abs(t-now)<60000&&daysAgo(t)===0))return'עכשיו · '+hm(t);const n=daysAgo(t);if(n===0)return hm(t);if(n===1)return'אתמול · '+hm(t);if(n===2)return'שלשום · '+hm(t);return dmy(t)+' · '+hm(t)}
 function atStamp(t){const n=daysAgo(t);if(n<=0&&Math.abs(t-Date.now())<60000)return hm(t);if(n===0)return hm(t);if(n===1)return'אתמול '+hm(t);if(n===2)return'שלשום '+hm(t);return dmy(t)+' '+hm(t)}
-function timeHint(t){if(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)return'הרישום יישמר לפי השעה הנוכחית.';const n=daysAgo(t);if(n===0)return'הרישומים יישמרו בשעה הזו עד חזרה ל״עכשיו״.';if(n===1)return'הרישומים יישמרו על אתמול, עד חזרה ל״עכשיו״.';if(n===2)return'הרישומים יישמרו על שלשום, עד חזרה ל״עכשיו״.';return'הרישומים יישמרו על '+dmy(t)+', עד חזרה ל״עכשיו״.'}
+function timeHint(t){if(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)return'יישמר לפי השעה הנוכחית.';const n=daysAgo(t),clock=hm(t);if(n===1)return'יישמר לאתמול · '+clock;if(n===2)return'יישמר לשלשום · '+clock;if(n===0)return'יישמר ל־'+clock;return'יישמר ל־'+dmy(t)+' · '+clock}
 function nudgeLog(min){setLogAt((logAt==null?Date.now():logAt)+min*60000);haptic(5)}
 function syncTimeUI(){const row=$('timeRow');if(!row)return;row.classList.toggle('show',view==='home'||view==='baby');const custom=logAt!=null;$('timeChip').classList.toggle('on',custom);$('timeLbl').textContent=atLabel(logTime());$('timeClr').classList.toggle('on',custom)}
 function fillTimeSheet(t){t=clampAt(t);$('tDate').min=BIRTH_YMD;$('tDate').max=ymdOf(Date.now());$('tDate').value=ymdOf(t);$('tTime').value=hmInput(t);renderTDays();paintTHint()}
@@ -534,14 +553,21 @@ function onTDate(){$('tDate').value=clampYmd($('tDate').value);renderTDays();pai
 function sheetAt(){const ymd=clampYmd($('tDate').value||ymdOf(Date.now()));return combineDayTime(ymd,$('tTime').value,ymd===ymdOf(Date.now()))}
 function paintTHint(){$('tHint').textContent=timeHint(sheetAt())}
 function paintBHint(){$('bTimeHint').textContent=timeHint(bottleAt())}
-function applyTime(){setLogAt(sheetAt());dTime.close();haptic(8)}
-function applyNow(){setLogAt(null);dTime.close();haptic(8)}
+function applyTime(){finishStamp(['tDate','tTime'],()=>{setLogAt(sheetAt());if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(logTime());dTime.close();haptic(8)})}
+function applyNow(){setLogAt(null);if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);dTime.close();haptic(8)}
 function nudgeTimeField(min){fillTimeSheet(sheetAt()+min*60000);haptic(5)}
-let bDay=null;
-function setBTime(t){if(t==null)t=Date.now();t=clampAt(t);bDay=ymdOf(t);$('bTime').value=hmInput(t);paintBHint()}
-function bottleAt(){const ymd=bDay||ymdOf(Date.now());return combineDayTime(ymd,$('bTime').value,ymd===ymdOf(Date.now()))}
+function finishStamp(ids,fn){const active=document.activeElement;const busy=active&&ids.includes(active.id);ids.forEach(id=>{const el=$(id);if(el)el.blur()});if(!busy){fn();return}let done=false;const run=()=>{if(done)return;done=true;fn()};active.addEventListener('change',run,{once:true});setTimeout(run,50)}
+let bDay=null,bHm=null;
+function syncBFromFields(){const d=$('bDate'),tm=$('bTime');if(d&&d.value)bDay=clampYmd(d.value);if(tm&&tm.value)bHm=tm.value}
+function setBTime(t){if(t==null)t=Date.now();t=clampAt(t);bDay=ymdOf(t);bHm=hmInput(t);const d=$('bDate');if(d){d.min=BIRTH_YMD;d.max=ymdOf(Date.now());d.value=bDay}$('bTime').value=bHm;renderBDays();bumpStamp()}
+function bottleAt(){syncBFromFields();const ymd=bDay||ymdOf(Date.now());return combineDayTime(ymd,bHm||($('bTime')&&$('bTime').value),ymd===ymdOf(Date.now()))}
+function renderBDays(){const el=$('bDaySeg');if(!el)return;const today=ymdOf(Date.now()),val=clampYmd(($('bDate')&&$('bDate').value)||bDay||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);bDay=addDaysYmd(today,-b.dataset.n);if($('bDate'))$('bDate').value=bDay;renderBDays();bumpStamp()})}
+function onBDate(){if($('bDate').value){bDay=clampYmd($('bDate').value);$('bDate').value=bDay}renderBDays();bumpStamp()}
+function onBTime(){if($('bTime').value)bHm=$('bTime').value;bumpStamp()}
+function bumpStamp(){paintBHint();paintBSave();setLogAt(bottleAt())}
+function paintBSave(){const btn=$('bSave');if(!btn)return;const who=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget];const t=bottleAt();const stamp=(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)?'עכשיו':atStamp(t);btn.textContent=who+' · '+stamp}
 function nudgeBTime(min){setBTime(bottleAt()+min*60000);haptic(5)}
-function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;const t=bottleAt();setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)}
+function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;finishStamp(['bDate','bTime'],()=>{syncBFromFields();const t=bottleAt();setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)})}
 
 /* ---------- segmented control ---------- */
 function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
@@ -731,7 +757,7 @@ function exportCSV(){
 
 /* close sheets on backdrop tap */
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadLog();rebuildKnown();render();tick();syncSoon()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render()}tick();if(!sheetOpen)syncSoon()}});
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
 
 /* app icon (PNG for iOS home screen) */
