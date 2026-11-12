@@ -434,13 +434,13 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
-const BUILD='v13-20261112-0850';
-const BUILD_LABEL='גרסה 13 · 12.11.2026';
+const BUILD='v14-20261112-1025';
+const BUILD_LABEL='גרסה 14 · 12.11.2026';
 
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
 const DEF={A:'בן',B:'בת'};const OLDDEF={A:'תינוק א׳',B:'תינוק ב׳'};
-const H=36e5,DAY=864e5;
+const H=36e5,DAY=864e5,FEED_INTERVAL_H=3;
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
 let data=[],tomb=[];function loadLog(){let a=load(KEY,[]);if(!Array.isArray(a))a=[];a=a.filter(e=>e&&e.id);data=a.filter(e=>!e.deleted);tomb=a.filter(e=>e.deleted)}loadLog();
 let names=Object.assign({},DEF,load(NKEY,{}));['A','B'].forEach(b=>{if(names[b]===OLDDEF[b])names[b]=DEF[b]});
@@ -585,10 +585,10 @@ function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<but
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);cb(b.dataset.v)})}
 
 /* ---------- rendering ---------- */
-function tier(ms){const h=ms/H;if(h<2)return'var(--ok)';if(h<3)return'var(--mid)';return'var(--hot)'}
+function tier(ms){const h=ms/H;if(h<FEED_INTERVAL_H*2/3)return'var(--ok)';if(h<FEED_INTERVAL_H)return'var(--mid)';return'var(--hot)'}
 function ring(b,size){const lf=lastOf(b,isFeed),r=size==='big'?52:42,c=2*Math.PI*r,vb=size==='big'?118:96,cx=vb/2;
   let p=0,col='var(--line)',inner;
-  if(lf){const el=Date.now()-lf.t;p=Math.min(el/(4*H),1);col=tier(el);const s=since(el);
+  if(lf){const el=Date.now()-lf.t;p=Math.min(el/(FEED_INTERVAL_H*H),1);col=tier(el);const s=since(el);
     inner=`<div class="icon">🍼</div><div class="big num" data-since="${lf.t}">${s.v}</div><div class="lbl" data-sinceu="${lf.t}">${s.u?s.u+' מהבקבוק':'בקבוק אחרון'}</div>`}
   else inner=`<div class="icon">🍼</div><div class="big" style="font-size:16px;color:var(--ink3)">—</div><div class="lbl">אין בקבוק עדיין</div>`;
   return`<div class="ringWrap"><svg viewBox="0 0 ${vb} ${vb}"><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="var(--line)" stroke-width="8"/><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" style="transition:stroke-dasharray .6s ease"/></svg><div class="ringIn">${inner}</div></div>`}
