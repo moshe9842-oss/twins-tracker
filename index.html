@@ -271,7 +271,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <main>
   <div class="timeRow" id="timeRow">
     <button type="button" class="timeChip" id="timeChip" onclick="openTimeDlg()"><span class="num" id="timeLbl"></span></button>
-    <button type="button" class="timeClr" id="timeClr" onclick="setLogAt(null)" aria-label="חזרה לעכשיו">×</button>
+    <button type="button" class="timeClr" id="timeClr" onclick="clearStamp()" aria-label="חזרה לעכשיו">×</button>
     <button type="button" class="nudge" onclick="nudgeLog(-15)">−15 ד׳</button>
     <button type="button" class="nudge" onclick="nudgeLog(-30)">−30 ד׳</button>
   </div>
@@ -345,8 +345,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <label class="fl">מתי</label>
   <div class="seg" id="bDaySeg"></div>
   <div class="whenRow">
-    <input class="f num" id="bDate" dir="ltr" type="date" oninput="onBDate()" onchange="onBDate()" onblur="onBDate()">
-    <input class="f num" id="bTime" dir="ltr" type="time" oninput="onBTime()" onchange="onBTime()" onblur="onBTime()">
+    <input class="f num" id="bDate" dir="ltr" onfocus="freezeStamp()" type="date" oninput="onBDate()" onchange="onBDate()" onblur="onBDate()">
+    <input class="f num" id="bTime" dir="ltr" onfocus="freezeStamp()" type="time" oninput="onBTime()" onchange="onBTime()" onblur="onBTime()">
   </div>
   <div class="tQuick">
     <button type="button" onclick="setBTime(null)">עכשיו</button>
@@ -354,7 +354,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <button type="button" onclick="nudgeBTime(-30)">−30 ד׳</button>
   </div>
   <p class="note" id="bTimeHint"></p>
-  <div class="btns"><button class="pri" id="bSave" onclick="saveBottle()">שמירה</button><button onclick="dBottle.close()">ביטול</button></div>
+  <div class="btns"><button class="pri" id="bSave" onclick="saveBottle()">שמירה</button><button onclick="cancelBottle()">ביטול</button></div>
 </div></dialog>
 
 <!-- time sheet -->
@@ -364,8 +364,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <label class="fl">יום</label>
   <div class="seg" id="tDaySeg"></div>
   <div class="whenRow">
-    <input class="f num" id="tDate" dir="ltr" type="date" oninput="onTDate()" onchange="onTDate()" onblur="onTDate()">
-    <input class="f num" id="tTime" dir="ltr" type="time" oninput="paintTHint()" onchange="paintTHint()" onblur="paintTHint()">
+    <input class="f num" id="tDate" dir="ltr" onfocus="freezeStamp()" type="date" oninput="onTDate()" onchange="onTDate()" onblur="onTDate()">
+    <input class="f num" id="tTime" dir="ltr" onfocus="freezeStamp()" type="time" oninput="liveStamp=false;paintTHint()" onchange="liveStamp=false;paintTHint()" onblur="paintTHint()">
   </div>
   <div class="tQuick">
     <button type="button" onclick="applyNow()">עכשיו</button>
@@ -511,18 +511,19 @@ function snap(){undoSnap=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=
 function commit(msg){if(undoSnap){const after=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=[...new Set([...undoSnap.keys(),...after.keys()])].filter(id=>undoSnap.get(id)!==after.get(id))}save();render();toast(msg,true);haptic(15)}
 function undo(){if(!undoSnap||!undoIds)return;for(const id of undoIds){const s=undoSnap.get(id),i=data.findIndex(e=>e.id===id);if(s){const r=JSON.parse(s);if(i>=0)data[i]=r;else data.push(r)}else if(i>=0)data.splice(i,1)}undoSnap=null;undoIds=null;save();render();toast('הפעולה בוטלה',false);haptic(8)}
 function who(bs){return bs.length>1?'לשניהם':'ל'+names[bs[0]]}
-function logBottle(bs,ml,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+atStamp(t))}
-function logDiaper(bs,kind,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+atStamp(t))}
-function toggleSleep(b){const s=openSleep(b),t=logTime();if(s&&t<s.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t)+' · '+atStamp(t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+atStamp(t))}}
+function consumeStamp(){liveStamp=true;setLogAt(null)}
+function logBottle(bs,ml,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+atStamp(t));consumeStamp()}
+function logDiaper(bs,kind,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+atStamp(t));consumeStamp()}
+function toggleSleep(b){const s=openSleep(b),t=logTime();if(s&&t<s.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t)+' · '+atStamp(t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+atStamp(t))}consumeStamp()}
 function sleepBoth(){const t=logTime(),sA=openSleep('A'),sB=openSleep('B');
   if(sA&&sB){if(t<sA.t||t<sB.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+atStamp(t))}
-  else{snap();['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+atStamp(t))}}
+  else{snap();['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+atStamp(t))}consumeStamp()}
 
 /* ---------- bottle sheet ---------- */
 const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
 function openBottle(target){bTarget=target||cur;
   const lb=bTarget==='AB'?(lastOf('A',e=>e.type==='bottle')||lastOf('B',e=>e.type==='bottle')):lastOf(bTarget,e=>e.type==='bottle');
-  $('bMl').value=lb?lb.ml:'';setBTime(logTime());renderBTarget();bSync();haptic(8);dBottle.showModal()}
+  $('bMl').value=lb?lb.ml:'';stampAtOpen=logAt;liveStamp=logAt==null;setBTime(liveStamp?null:logTime());renderBTarget();bSync();haptic(8);dBottle.showModal()}
 function renderBTarget(){seg('bTarget',[['A',names.A],['B',names.B],['AB','לשניהם']],bTarget,v=>{bTarget=v;renderBTarget()});paintBSave()}
 function bSync(){const v=parseInt($('bMl').value);$('qs').innerHTML=AMOUNTS.map(a=>`<button class="q num${a===v?' on':''}" onclick="pickMl(${a})">${a}</button>`).join('');$('bSave').disabled=!(v>0)}
 function pickMl(a){$('bMl').value=a;bSync();haptic(6)}
@@ -547,27 +548,33 @@ function timeHint(t){if(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)return'יי
 function nudgeLog(min){setLogAt((logAt==null?Date.now():logAt)+min*60000);haptic(5)}
 function syncTimeUI(){const row=$('timeRow');if(!row)return;row.classList.toggle('show',view==='home'||view==='baby');const custom=logAt!=null;$('timeChip').classList.toggle('on',custom);$('timeLbl').textContent=atLabel(logTime());$('timeClr').classList.toggle('on',custom)}
 function fillTimeSheet(t){t=clampAt(t);$('tDate').min=BIRTH_YMD;$('tDate').max=ymdOf(Date.now());$('tDate').value=ymdOf(t);$('tTime').value=hmInput(t);renderTDays();paintTHint()}
-function openTimeDlg(){fillTimeSheet(logTime());haptic(6);dTime.showModal()}
-function renderTDays(){const today=ymdOf(Date.now()),val=clampYmd($('tDate').value||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';const el=$('tDaySeg');el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);$('tDate').value=addDaysYmd(today,-b.dataset.n);renderTDays();paintTHint()})}
-function onTDate(){$('tDate').value=clampYmd($('tDate').value);renderTDays();paintTHint()}
+function openTimeDlg(){liveStamp=logAt==null;fillTimeSheet(logTime());haptic(6);dTime.showModal()}
+function renderTDays(){const today=ymdOf(Date.now()),val=clampYmd($('tDate').value||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';const el=$('tDaySeg');el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);liveStamp=false;$('tDate').value=addDaysYmd(today,-b.dataset.n);renderTDays();paintTHint()})}
+function onTDate(){liveStamp=false;$('tDate').value=clampYmd($('tDate').value);renderTDays();paintTHint()}
 function sheetAt(){const ymd=clampYmd($('tDate').value||ymdOf(Date.now()));return combineDayTime(ymd,$('tTime').value,ymd===ymdOf(Date.now()))}
 function paintTHint(){$('tHint').textContent=timeHint(sheetAt())}
 function paintBHint(){$('bTimeHint').textContent=timeHint(bottleAt())}
-function applyTime(){finishStamp(['tDate','tTime'],()=>{setLogAt(sheetAt());if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(logTime());dTime.close();haptic(8)})}
-function applyNow(){setLogAt(null);if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);dTime.close();haptic(8)}
-function nudgeTimeField(min){fillTimeSheet(sheetAt()+min*60000);haptic(5)}
+function applyTime(){finishStamp(['tDate','tTime'],()=>{liveStamp=false;setLogAt(sheetAt());if(typeof dBottle!=='undefined'&&dBottle.open){liveStamp=logAt==null;setBTime(liveStamp?null:logTime())}dTime.close();haptic(8)})}
+function applyNow(){clearStamp();dTime.close();haptic(8)}
+function nudgeTimeField(min){liveStamp=false;fillTimeSheet(sheetAt()+min*60000);haptic(5)}
 function finishStamp(ids,fn){const active=document.activeElement;const busy=active&&ids.includes(active.id);ids.forEach(id=>{const el=$(id);if(el)el.blur()});if(!busy){fn();return}let done=false;const run=()=>{if(done)return;done=true;fn()};active.addEventListener('change',run,{once:true});setTimeout(run,50)}
-let bDay=null,bHm=null;
+let bDay=null,bHm=null,liveStamp=true,stampAtOpen=null;
 function syncBFromFields(){const d=$('bDate'),tm=$('bTime');if(d&&d.value)bDay=clampYmd(d.value);if(tm&&tm.value)bHm=tm.value}
-function setBTime(t){if(t==null)t=Date.now();t=clampAt(t);bDay=ymdOf(t);bHm=hmInput(t);const d=$('bDate');if(d){d.min=BIRTH_YMD;d.max=ymdOf(Date.now());d.value=bDay}$('bTime').value=bHm;renderBDays();bumpStamp()}
-function bottleAt(){syncBFromFields();const ymd=bDay||ymdOf(Date.now());return combineDayTime(ymd,bHm||($('bTime')&&$('bTime').value),ymd===ymdOf(Date.now()))}
-function renderBDays(){const el=$('bDaySeg');if(!el)return;const today=ymdOf(Date.now()),val=clampYmd(($('bDate')&&$('bDate').value)||bDay||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);bDay=addDaysYmd(today,-b.dataset.n);if($('bDate'))$('bDate').value=bDay;renderBDays();bumpStamp()})}
-function onBDate(){if($('bDate').value){bDay=clampYmd($('bDate').value);$('bDate').value=bDay}renderBDays();bumpStamp()}
-function onBTime(){if($('bTime').value)bHm=$('bTime').value;bumpStamp()}
-function bumpStamp(){paintBHint();paintBSave();setLogAt(bottleAt())}
-function paintBSave(){const btn=$('bSave');if(!btn)return;const who=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget];const t=bottleAt();const stamp=(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)?'עכשיו':atStamp(t);btn.textContent=who+' · '+stamp}
-function nudgeBTime(min){setBTime(bottleAt()+min*60000);haptic(5)}
-function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;finishStamp(['bDate','bTime'],()=>{syncBFromFields();const t=bottleAt();setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)})}
+function freezeStamp(){if(!liveStamp)return;liveStamp=false;if(typeof dBottle!=='undefined'&&dBottle.open)bumpStamp()}
+function clearStamp(){liveStamp=true;setLogAt(null);if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now())}
+function setBTime(t){if(t==null){liveStamp=true;t=Date.now()}t=clampAt(t);bDay=ymdOf(t);bHm=hmInput(t);const d=$('bDate');if(d){d.min=BIRTH_YMD;d.max=ymdOf(Date.now());d.value=bDay}$('bTime').value=bHm;renderBDays();if(liveStamp){paintBHint();paintBSave();setLogAt(null)}else bumpStamp()}
+function bottleAt(){syncBFromFields();if(liveStamp)return Date.now();const ymd=bDay||ymdOf(Date.now());return combineDayTime(ymd,bHm||($('bTime')&&$('bTime').value),ymd===ymdOf(Date.now()))}
+function renderBDays(){const el=$('bDaySeg');if(!el)return;const today=ymdOf(Date.now()),val=clampYmd(($('bDate')&&$('bDate').value)||bDay||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);const ymd=addDaysYmd(today,-b.dataset.n);if(liveStamp&&ymd===bDay)return;liveStamp=false;bDay=ymd;if($('bDate'))$('bDate').value=bDay;renderBDays();bumpStamp()})}
+function onBDate(){liveStamp=false;if($('bDate').value){bDay=clampYmd($('bDate').value);$('bDate').value=bDay}renderBDays();bumpStamp()}
+function onBTime(){liveStamp=false;if($('bTime').value)bHm=$('bTime').value;bumpStamp()}
+function bumpStamp(){paintBHint();paintBSave();setLogAt(liveStamp?null:bottleAt())}
+function paintBSave(){const btn=$('bSave');if(!btn)return;const who=bTarget==='AB'?'שמירה לשניהם':'שמירה ל'+names[bTarget];const t=liveStamp?Date.now():bottleAt();const stamp=(liveStamp||(Math.abs(t-Date.now())<60000&&daysAgo(t)===0))?'עכשיו':atStamp(t);btn.textContent=who+' · '+stamp}
+function nudgeBTime(min){liveStamp=false;setBTime(bottleAt()+min*60000);haptic(5)}
+let savingBottle=false;
+function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;finishStamp(['bDate','bTime'],()=>{syncBFromFields();const t=liveStamp?Date.now():bottleAt();savingBottle=true;stampAtOpen=null;dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t);setTimeout(()=>{savingBottle=false},0)})}
+function cancelBottle(){dBottle.close()}
+function onBottleClosed(){if(savingBottle)return;if(stampAtOpen==null){liveStamp=true;setLogAt(null)}else setLogAt(stampAtOpen)}
+function pulseLive(){const now=Date.now();if(typeof dBottle!=='undefined'&&dBottle.open&&liveStamp){const y=ymdOf(now),h=hmInput(now);const dayChanged=bDay!==y;bDay=y;bHm=h;const d=$('bDate');if(d){d.min=BIRTH_YMD;d.max=y;if(d.value!==y)d.value=y}if($('bTime')&&$('bTime').value!==h)$('bTime').value=h;if(dayChanged)renderBDays();paintBHint();paintBSave()}if(typeof dTime!=='undefined'&&dTime.open&&liveStamp){const y=ymdOf(now),h=hmInput(now),td=$('tDate'),tt=$('tTime');if(td){td.max=y;if(td.value!==y){td.value=y;renderTDays()}}if(tt&&tt.value!==h)tt.value=h;paintTHint()}}
 
 /* ---------- segmented control ---------- */
 function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
@@ -710,6 +717,7 @@ function tick(){
   document.querySelectorAll('[data-ago]').forEach(el=>{el.textContent=sinceTxt(now-+el.dataset.ago)});
   document.querySelectorAll('[data-age]').forEach(el=>{el.textContent=ageTxt(el.dataset.age)});
   if($('timeRow')&&$('timeRow').classList.contains('show'))syncTimeUI();
+  pulseLive();
 }
 
 /* toast */
@@ -757,7 +765,9 @@ function exportCSV(){
 
 /* close sheets on backdrop tap */
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render()}tick();if(!sheetOpen)syncSoon()}});
+function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render()}tick();if(!sheetOpen)syncSoon()}
+document.addEventListener('visibilitychange',onAppResume);
+window.addEventListener('pageshow',onAppResume);
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
 
 /* app icon (PNG for iOS home screen) */
@@ -858,6 +868,7 @@ try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portra
   window.addEventListener('resize',place);
   window.addEventListener('orientationchange',()=>setTimeout(place,80));
 })();
+if(typeof dBottle!=='undefined')dBottle.addEventListener('close',onBottleClosed);
 tick();render();setInterval(tick,1000);setInterval(render,60000);
 if(!me)setTimeout(whoDlg,400);
 </script>
