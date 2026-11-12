@@ -169,7 +169,21 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .it .tx b{display:block;font-size:14.5px;font-weight:700}
 .it .tx small{font-size:12px;color:var(--ink3)}
 .bp{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
-.bp.A{background:var(--a2);color:var(--a)}.bp.B{background:var(--b2);color:var(--b)}
+.bp.A{background:var(--a2);color:var(--a)}.bp.B{background:var(--b2);color:var(--b)}.bp.AB{background:rgba(194,150,74,.16);color:var(--gold);max-width:140px}
+.ic.appt{background:rgba(194,150,74,.16)}
+#homeAppts{margin:12px 0 2px}
+.apptCard{padding:12px 14px 8px;width:100%;text-align:right;cursor:pointer}
+.apptCard .apptH{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.apptCard .apptH b{font-size:14.5px;font-weight:800}
+.apptCard .apptH .chev{color:var(--ink3);font-size:18px;line-height:1}
+.apptLine{display:flex;align-items:baseline;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.apptLine .tm{font-weight:800;min-width:46px;color:var(--ink);flex:none}
+.apptLine .who{font-weight:800;font-size:12px;flex:none}
+.apptLine .who.A{color:var(--a)}.apptLine .who.B{color:var(--b)}.apptLine .who.AB{color:var(--gold)}
+.apptLine .doc{flex:1;min-width:0;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apptMore{font-size:12px;color:var(--ink3);font-weight:600;padding:4px 0 6px}
+#apptsList .day{margin-top:4px}
+#apptsList .it .tx small{display:block;line-height:1.45}
 .empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
 .empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
 /* nav */
@@ -280,6 +294,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <!-- HOME -->
   <section class="view on" id="v-home">
     <div class="twins" id="twins"></div>
+    <div id="homeAppts"></div>
     <div class="sec"><h2>לשניהם בלחיצה</h2><span>נרשם לשני התינוקות יחד</span></div>
     <div class="glass both">
       <button onclick="openBottle('AB')"><i>🍼</i>בקבוק</button>
@@ -418,11 +433,40 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <p class="note">הרשימה משותפת לכל המכשירים. הסרת משתמש לא משנה רישומים קודמים.</p>
 </div></dialog>
 
+<!-- appointments list -->
+<dialog class="sheet" id="dAppts"><div class="sh">
+  <div class="grab"></div>
+  <h3>📅 תורים</h3>
+  <div id="apptsList"></div>
+  <div class="btns"><button class="pri" onclick="openAppt()">＋ תור חדש</button><button onclick="dAppts.close()">סגירה</button></div>
+</div></dialog>
+
+<!-- appointment editor -->
+<dialog class="sheet" id="dAppt"><div class="sh">
+  <div class="grab"></div>
+  <h3 id="apTitle">תור חדש</h3>
+  <label class="fl">תינוק</label>
+  <div class="seg" id="apBaby"></div>
+  <label class="fl">תאריך ושעה</label>
+  <div class="whenRow">
+    <input class="f num" id="apDate" dir="ltr" type="date">
+    <input class="f num" id="apTime" dir="ltr" type="time">
+  </div>
+  <label class="fl">רופא/ה או כותרת</label>
+  <input class="f" id="apDoc" autocomplete="off" placeholder="ד״ר…">
+  <label class="fl">מקום</label>
+  <input class="f" id="apPlace" autocomplete="off" placeholder="כתובת">
+  <label class="fl">הערה <span style="font-weight:500;color:var(--ink3)">(לא חובה)</span></label>
+  <input class="f" id="apNote" autocomplete="off">
+  <div class="btns"><button class="pri" onclick="saveAppt()">שמירה</button><button class="dng" id="apDel" onclick="delAppt()">מחיקה</button><button onclick="cancelAppt()">ביטול</button></div>
+</div></dialog>
+
 <!-- menu sheet -->
 <dialog class="sheet" id="dMenu"><div class="sh menu">
   <div class="grab"></div>
   <h3>אפשרויות</h3>
   <button onclick="dMenu.close();manualDlg()"><i>＋</i>רישום ידני</button>
+  <button onclick="dMenu.close();openAppts()"><i>📅</i>תורים</button>
   <button onclick="dMenu.close();renameDlg()"><i>✏️</i>שמות התינוקות</button>
   <button onclick="dMenu.close();exportCSV()"><i>⬇️</i>ייצוא ל-CSV (אקסל)</button>
   <button onclick="dMenu.close();whoDlg()"><i>👤</i>החלפת משתמש <span id="meLbl" style="margin-inline-start:4px;color:var(--ink3);font-weight:600"></span></button>
@@ -436,8 +480,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
-const BUILD='v15-20261112-1653';
-const BUILD_LABEL='גרסה 15 · 12.11.2026';
+const BUILD='v16-20261112-1716';
+const BUILD_LABEL='גרסה 16 · 12.11.2026';
 
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
@@ -450,7 +494,7 @@ let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
 let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={},logAt=null;
 const $=id=>document.getElementById(id);
 const persist=()=>localStorage.setItem(KEY,JSON.stringify(data.concat(tomb)));
-const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end','by']);
+const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end','by','title','place','note']);
 const MEKEY='twins_who_v1',DEFUSERS=['ברכי','משה','סבתא ציפורה','סבתא מירה','רבקי'];const users=()=>Array.isArray(names.users)?names.users:DEFUSERS;let me=(localStorage.getItem(MEKEY)||'').trim().slice(0,30);
 const mk=o=>{if(me)o.by=me;return o};
 const byLine=e=>e&&e.by?'<div class="byl">'+esc(e.by)+'</div>':'';
@@ -487,15 +531,17 @@ function calAge(t0,now){const b=ilParts(t0);let mo=(ilParts(now).year-b.year)*12
 function ageTxt(b,now){now=now==null?Date.now():now;const t0=BIRTH[b];if(!t0)return'';const ms=now-t0;if(ms<0)return'';const g=b==='A'?'בן':'בת',mins=Math.floor(ms/60000),hrs=Math.floor(ms/H),days=Math.floor(ms/DAY);if(mins<1)return b==='A'?'נולד עכשיו':'נולדה עכשיו';if(hrs<1)return g+' '+hebN(mins,U.m);if(hrs<24)return g+' '+hebN(hrs,U.h);if(days<14){const h=Math.floor((ms%DAY)/H);return g+' '+hebN(days,U.d)+(h?' · '+hebN(h,U.h):'')}const cal=calAge(t0,now);if(cal.months>=3)return g+' '+hebN(cal.months,U.mo)+(cal.days?' '+hebAnd(cal.days,U.d):'');const w=Math.floor(days/7),r=days%7;return g+' '+hebN(w,U.w)+(r?' '+hebAnd(r,U.d):'')}
 
 function isFeed(e){return e.type==='bottle'||e.type==='feed'}
+function isCare(e){return e&&e.type!=='appt'}
 function lastOf(b,f){let r=null;for(const e of data)if(e.baby===b&&f(e)&&(!r||e.t>r.t))r=e;return r}
 function openSleep(b){return lastOf(b,e=>e.type==='sleep'&&!e.end)}
-function icon(e){if(e.type==='bottle'||e.type==='feed')return'🍼';if(e.type==='diaper')return e.kind==='קטנים'?'💧':'💩';if(e.type==='sleep')return'😴';return'•'}
+function icon(e){if(e.type==='bottle'||e.type==='feed')return'🍼';if(e.type==='diaper')return e.kind==='קטנים'?'💧':'💩';if(e.type==='sleep')return'😴';if(e.type==='appt')return'📅';return'•'}
 function icCls(e){if(e.type==='diaper')return e.kind==='קטנים'?'diaper':'poo';return e.type}
 function title(e){
   if(e.type==='bottle')return'בקבוק · '+e.ml+' סמ״ק';
   if(e.type==='feed')return'האכלה';
   if(e.type==='diaper')return e.kind||'החלפה';
   if(e.type==='sleep')return e.end?'שינה · '+dur(e.end-e.t):'שינה · עדיין ישן/ה';
+  if(e.type==='appt')return e.title||'תור';
   return'רישום';
 }
 function subtitle(e){if(e.type==='sleep')return e.end?hm(e.t)+' – '+hm(e.end):'מ-'+hm(e.t);return''}
@@ -615,7 +661,7 @@ function renderHome(){
   const both=openSleep('A')&&openSleep('B');$('bothSleep').innerHTML=both?'<i>☀️</i>התעוררו':'<i>😴</i>נרדמו';
   const from=Date.now()-DAY,a=stats('A',from),c=stats('B',from);
   $('sumNow').textContent='עד '+hm(Date.now());
-  const has=data.some(e=>e.t>=from||(e.type==='sleep'&&(!e.end||e.end>=from)));
+  const has=data.some(e=>isCare(e)&&(e.t>=from||(e.type==='sleep'&&(!e.end||e.end>=from))));
   const row=(k,va,vb)=>`<div class="cmpRow"><div class="k">${k}</div><div class="v num">${va}</div><div class="v num">${vb}</div></div>`;
   const mlU=v=>v+'<span class="u">סמ״ק</span>';
   $('cmp').innerHTML=!has?empty('📋','עדיין אין רישומים ב-24 השעות האחרונות.<br>כל לחיצה על כפתור נרשמת עם השעה הנוכחית.'):
@@ -623,6 +669,7 @@ function renderHome(){
     row('🍼 בקבוקים',a.n,c.n)+row('Σ סה״כ',mlU(a.ml),mlU(c.ml))+row('⌀ ממוצע',a.n?mlU(a.avg):'—',c.n?mlU(c.avg):'—')+
     row('💧 קטנים',a.pee,c.pee)+row('💩 גדולים',a.poo,c.poo)+row('😴 שינה',a.sl?durShort(a.sl)+'<span class="u">שע׳</span>':'—',c.sl?durShort(c.sl)+'<span class="u">שע׳</span>':'—');
   $('stripHome').innerHTML=stripHTML(['A','B']);
+  renderHomeAppts();
 }
 function empty(e,t){return`<div class="empty"><span class="e">${e}</span>${t}</div>`}
 
@@ -678,14 +725,14 @@ function renderBaby(){
     tile(st.gap?durShort(st.gap):'—','מרווח ממוצע')+tile(st.max||'—','בקבוק גדול')+tile(stats(b,startOfDay(Date.now())).ml,'סמ״ק היום');
   $('stripBaby').innerHTML=stripHTML([b]);
   $('barsBaby').innerHTML=barsHTML([b]);
-  const items=data.filter(e=>e.baby===b).sort((x,y)=>y.t-x.t).slice(0,30);
+  const items=data.filter(e=>e.baby===b&&isCare(e)).sort((x,y)=>y.t-x.t).slice(0,30);
   $('babyList').innerHTML=items.length?items.map(e=>itemHTML(e,false).replace('<span class="tm num">','<span class="tm num" title="'+dmy(e.t)+'">')).join(''):empty('🌙','אין רישומים עדיין ל'+esc(names[b])+'.');
 }
 
 function dayLabel(d){const n=Math.round((startOfDay(Date.now())-d)/DAY);if(n===0)return'היום';if(n===1)return'אתמול';if(n===2)return'שלשום';return'יום '+WD[new Date(d).getDay()]}
 function renderLog(){
   seg('filterSeg',[['all','שניהם'],['A',names.A],['B',names.B]],filter,v=>{filter=v;renderLog()});
-  const items=data.filter(e=>filter==='all'||e.baby===filter).sort((x,y)=>y.t-x.t);
+  const items=data.filter(e=>isCare(e)&&(filter==='all'||e.baby===filter)).sort((x,y)=>y.t-x.t);
   if(!items.length){$('timeline').innerHTML='<div class="glass" style="margin-top:14px">'+empty('📒','היומן ריק. רישומים יופיעו כאן לפי ימים.')+'</div>';return}
   const groups=new Map();items.forEach(e=>{const k=startOfDay(e.t);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)});
   let h='';groups.forEach((arr,k)=>{const mlOf=b=>arr.filter(e=>e.type==='bottle'&&e.baby===b).reduce((a,e)=>a+(+e.ml||0),0);
@@ -737,7 +784,7 @@ function renderEdit(){
   seg('eKind',[['קטנים','💧 קטנים'],['גדולים','💩 גדולים'],['קטנים + גדולים','שניהם']],eState.kind,v=>{eState.kind=v;renderEdit()});
   const t=eState.type;$('fMl').style.display=t==='bottle'?'':'none';$('fKind').style.display=t==='diaper'?'':'none';$('fEnd').style.display=t==='sleep'?'':'none';$('lTime').textContent=t==='sleep'?'שעת הירדמות':'שעה';
 }
-function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
+function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;if(e.type==='appt'){openAppt(e.id);return}editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
   $('eTitle').textContent='עריכת רישום';$('eDel').style.display='';$('eMl').value=e.ml||'';$('eTime').value=toLocal(e.t);$('eEnd').value=e.end?toLocal(e.end):'';renderEdit();haptic(6);dEdit.showModal()}
 function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים',by:me};fillBy();
   $('eTitle').textContent='רישום ידני';$('eDel').style.display='none';$('eMl').value='';$('eTime').value=toLocal(Date.now());$('eEnd').value='';renderEdit();dEdit.showModal()}
@@ -753,6 +800,47 @@ function saveEdit(){
 }
 function delEdit(){if(!confirm('למחוק את הרישום?'))return;snap();data=data.filter(x=>x.id!==editId);dEdit.close();commit('🗑️ הרישום נמחק')}
 
+/* ---------- appointments ---------- */
+let apBaby='A',editApptId=null;
+function apptBabyLabel(e){if(!e)return'';if(e.baby==='AB')return(names.A||DEF.A)+' ו'+(names.B||DEF.B);return names[e.baby]||e.baby}
+function upcomingAppts(now){now=now==null?Date.now():now;const start=startOfDay(now);return data.filter(e=>e.type==='appt'&&e.t>=start).sort((a,b)=>a.t-b.t)}
+function apptDayLabel(t){const d=startOfDay(t),n=Math.round((d-startOfDay(Date.now()))/DAY);if(n===0)return'היום';if(n===1)return'מחר';if(n===-1)return'אתמול';return'יום '+WD[new Date(d).getDay()]}
+function combineAppt(ymd,hmStr){const[h,m]=String(hmStr||'00:00').split(':').map(Number);const d=new Date(parseYmd(ymd));d.setHours(isFinite(h)?h:0,isFinite(m)?m:0,0,0);return d.getTime()}
+function renderHomeAppts(){const el=$('homeAppts');if(!el)return;const list=upcomingAppts();if(!list.length){el.innerHTML='';return}
+  const rows=list.slice(0,3).map(e=>`<div class="apptLine"><span class="tm num">${esc(apptDayLabel(e.t)==='היום'?hm(e.t):apptDayLabel(e.t)+' · '+hm(e.t))}</span><span class="who ${e.baby}">${esc(apptBabyLabel(e))}</span><span class="doc">${esc(e.title||'תור')}</span></div>`).join('');
+  const more=list.length>3?`<div class="apptMore">עוד ${list.length-3}</div>`:'';
+  el.innerHTML=`<button type="button" class="glass apptCard" onclick="openAppts()"><div class="apptH"><b>📅 תורים קרובים</b><span class="chev">‹</span></div>${rows}${more}</button>`}
+function renderAppts(){const el=$('apptsList');if(!el)return;const list=upcomingAppts();
+  if(!list.length){el.innerHTML='<div class="glass" style="margin-top:6px">'+empty('📅','אין תורים קרובים. אפשר להוסיף תור לרופא/ה עם תזכורת בבוקר של אותו יום.')+'</div>';return}
+  const groups=new Map();list.forEach(e=>{const k=startOfDay(e.t);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)});
+  let h='';groups.forEach((arr,k)=>{h+=`<div class="day"><div class="dayH"><b>${apptDayLabel(k)} · <span class="num" style="color:var(--ink2);font-size:13px">${dmy(k)}</span></b><span>${arr.length===1?'תור אחד':arr.length+' תורים'}</span></div><div class="glass list">${arr.map(apptItemHTML).join('')}</div></div>`});
+  el.innerHTML=h}
+function apptItemHTML(e){const sub=[e.place,e.note].filter(Boolean).join(' · ');
+  return`<button class="it" onclick="openAppt('${e.id}')"><span class="tm num">${hm(e.t)}</span><span class="ic appt">📅</span><span class="tx"><b>${esc(e.title||'תור')}</b>${sub?'<small>'+esc(sub)+'</small>':''}</span><span class="bp ${e.baby}">${esc(apptBabyLabel(e))}</span></button>`}
+function openAppts(){renderAppts();if(typeof dAppt!=='undefined'&&dAppt.open)dAppt.close();dAppts.showModal();haptic(6)}
+function openAppt(id){if(typeof dAppts!=='undefined'&&dAppts.open)dAppts.close();
+  const e=id?data.find(x=>x.id===id&&x.type==='appt'):null;
+  editApptId=e?e.id:null;apBaby=e?(e.baby==='B'?'B':e.baby==='AB'?'AB':'A'):(cur||'A');
+  $('apTitle').textContent=e?'עריכת תור':'תור חדש';
+  $('apDel').style.display=e?'':'none';
+  const today=ymdOf(Date.now());const max=(()=>{const d=new Date();d.setFullYear(d.getFullYear()+2);return ymdOf(d.getTime())})();
+  const t=e?e.t:(parseYmd(today)+9*H);
+  $('apDate').min=e&&ymdOf(e.t)<today?ymdOf(e.t):today;$('apDate').max=max;
+  $('apDate').value=ymdOf(t);$('apTime').value=hmInput(t);
+  $('apDoc').value=e&&e.title?e.title:'';$('apPlace').value=e&&e.place?e.place:'';$('apNote').value=e&&e.note?e.note:'';
+  renderApBaby();haptic(6);dAppt.showModal()}
+function renderApBaby(){seg('apBaby',[['A',names.A],['B',names.B],['AB','שניהם']],apBaby,v=>{apBaby=v;renderApBaby()})}
+function cancelAppt(){dAppt.close();openAppts()}
+function saveAppt(){const title=$('apDoc').value.trim();if(!title){alert('צריך למלא רופא/ה או כותרת');return}
+  const ymd=$('apDate').value,hmv=$('apTime').value;if(!ymd||!hmv){alert('צריך לבחור תאריך ושעה');return}
+  const t=combineAppt(ymd,hmv);if(!t||isNaN(t)){alert('תאריך לא תקין');return}
+  const e=mk({id:editApptId||uid(),baby:apBaby,type:'appt',t,title});
+  const place=$('apPlace').value.trim();if(place)e.place=place;
+  const note=$('apNote').value.trim();if(note)e.note=note;
+  snap();if(editApptId){const i=data.findIndex(x=>x.id===editApptId);if(i>=0)data[i]=e;else data.push(e)}else data.push(e);
+  dAppt.close();commit(editApptId?'✓ התור עודכן':'✓ התור נשמר ל'+apptBabyLabel(e));openAppts()}
+function delAppt(){if(!editApptId||!confirm('למחוק את התור?'))return;snap();data=data.filter(x=>x.id!==editApptId);dAppt.close();commit('🗑️ התור נמחק');openAppts()}
+
 /* names / menu / export */
 function renameDlg(){$('nA').value=names.A;$('nB').value=names.B;dNames.showModal()}
 function storeNames(){names.updated=Date.now();localStorage.setItem(NKEY,JSON.stringify(names));if(sync){sync.namesPending=1;saveSync();syncSoon()}}
@@ -762,7 +850,7 @@ function exportCSV(){
   const tl={feed:'האכלה',bottle:'בקבוק',diaper:'החלפה',sleep:'שינה'};
   const f=t=>{if(!t)return'';const d=new Date(t);return d.toLocaleDateString('he-IL')+' '+hm(t)};
   const rows=[['תינוק','סוג','פרט','כמות סמ״ק','שעה','סיום שינה','משך שינה (דק׳)','מי']].concat(
-    data.slice().sort((a,b)=>a.t-b.t).map(e=>[names[e.baby]||e.baby,tl[e.type]||e.type,e.kind||'',e.ml||'',f(e.t),f(e.end),e.end?Math.round((e.end-e.t)/60000):'',e.by||'']));
+    data.filter(isCare).slice().sort((a,b)=>a.t-b.t).map(e=>[names[e.baby]||e.baby,tl[e.type]||e.type,e.kind||'',e.ml||'',f(e.t),f(e.end),e.end?Math.round((e.end-e.t)/60000):'',e.by||'']));
   const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   const d=new Date();a.download='twins-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.csv';
@@ -791,7 +879,7 @@ async function checkAppUpdate(){
   }catch(e){}
   finally{checkAppUpdate._busy=false}
 }
-function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
+function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dAppt!=='undefined'&&dAppt.open)||(typeof dAppts!=='undefined'&&dAppts.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
 document.addEventListener('visibilitychange',onAppResume);
 window.addEventListener('pageshow',onAppResume);
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
@@ -811,8 +899,11 @@ const saveQ=()=>localStorage.setItem(QKEY,JSON.stringify(queue));
 function setDot(s){syncState=s;const d=$('syncDot');d.className=sync?'on '+s:'';d.title={ok:'מסונכרן',busy:'מסנכרן…',off:'אין חיבור – יסונכרן אוטומטית',err:'שגיאת הרשאה בסנכרון'}[s]||''}
 function enqueue(r){if(!sync)return;queue[r.id]=Object.assign({},r);saveQ();syncSoon()}
 function syncSoon(ms){if(!sync)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,ms==null?300:ms)}
-function cleanRec(r){const n={id:String(r.id),baby:r.baby==='B'?'B':'A',type:String(r.type),t:+r.t||0,updated:+r.updated||0};
-  if(r.ml!=null&&r.ml!=='')n.ml=+r.ml;if(r.kind)n.kind=String(r.kind);if(r.end)n.end=+r.end;if(+r.deleted===1)n.deleted=1;if(r.by&&typeof r.by==='string')n.by=r.by.trim().slice(0,30);return n}
+function cleanRec(r){const isAp=String(r.type)==='appt';const baby=isAp?(r.baby==='B'?'B':r.baby==='AB'?'AB':'A'):(r.baby==='B'?'B':'A');
+  const n={id:String(r.id),baby,type:String(r.type),t:+r.t||0,updated:+r.updated||0};
+  if(r.ml!=null&&r.ml!=='')n.ml=+r.ml;if(r.kind)n.kind=String(r.kind);if(r.end)n.end=+r.end;if(+r.deleted===1)n.deleted=1;if(r.by&&typeof r.by==='string')n.by=r.by.trim().slice(0,30);
+  if(isAp){if(r.title)n.title=String(r.title).trim().slice(0,120);if(r.place)n.place=String(r.place).trim().slice(0,120);if(r.note)n.note=String(r.note).trim().slice(0,200)}
+  return n}
 async function api(body){
   const res=await fetch(sync.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:sync.k},body)),redirect:'follow',cache:'no-store'});
   const j=await res.json();if(!j||!j.ok){const err=new Error(j&&j.error||'error');err.auth=j&&j.error==='auth';throw err}return j}
