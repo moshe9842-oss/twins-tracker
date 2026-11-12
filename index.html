@@ -187,6 +187,15 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 #clinicBody .it .tx small,#apptsList .it .tx small{display:block;line-height:1.45}
 .pastBtn{display:block;width:100%;margin:10px 0 4px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink2);text-align:center}
 .pastBtn:active{background:var(--line)}
+.addBtn.rxAdd{padding:0 10px;font-size:13px}
+.rxThumb{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:var(--line);display:block}
+.rxPdf{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;background:rgba(208,98,79,.12);color:var(--hot);font-size:11px;font-weight:800;letter-spacing:.04em;flex:none}
+.rxPdf.lg{width:72px;height:72px;font-size:16px;margin:0 auto}
+.rxPrev{display:flex;justify-content:center;margin:4px 0 8px;min-height:72px;align-items:center}
+.rxPrevImg{max-width:100%;max-height:180px;border-radius:14px;object-fit:contain;background:var(--line)}
+.rxViewImg{width:100%;max-height:62vh;object-fit:contain;border-radius:14px;background:#16161e}
+.rxViewPdf{width:100%;height:62vh;border:0;border-radius:14px;background:#16161e}
+.rxViewBody{margin:8px 0 12px}
 textarea.f{width:100%;padding:13px 14px;font-size:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:inherit;min-height:84px;resize:vertical;line-height:1.45}
 .empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
 .empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
@@ -228,7 +237,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .menu i{font-style:normal;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--line);font-size:17px}
 .note{font-size:12px;color:var(--ink3);line-height:1.5;margin:10px 4px 0}
 /* toast */
-#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:40;display:flex;align-items:center;gap:14px;padding:11px 12px 11px 18px;border-radius:18px;background:rgba(29,34,48,.94);color:#fff;font-size:14.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1.2);max-width:calc(100% - 28px);white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:40;display:flex;align-items:center;gap:14px;padding:11px 12px 11px 18px;border-radius:18px;background:rgba(29,34,48,.94);color:#fff;font-size:14.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1.2);max-width:calc(100% - 28px);white-space:normal;line-height:1.35;text-align:right}
 #toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 #toast button{color:#9fe3d8;font-weight:800;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.1)}
 #toast span{overflow:hidden;text-overflow:ellipsis}
@@ -468,24 +477,27 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <div class="btns"><button class="pri" onclick="saveAppt()">שמירה</button><button class="dng" id="apDel" onclick="delAppt()">מחיקה</button><button onclick="dAppt.close()">ביטול</button></div>
 </div></dialog>
 
-<!-- prescription editor -->
+<!-- prescription upload (file only; baby is the only choice, date is now) -->
 <dialog class="sheet" id="dRx"><div class="sh">
   <div class="grab"></div>
-  <h3 id="rxTitle">מרשם חדש</h3>
+  <h3>העלאת מרשם</h3>
+  <div class="rxPrev" id="rxPrev"></div>
+  <p class="note" id="rxPrevName"></p>
   <label class="fl">תינוק</label>
   <div class="seg" id="rxBaby"></div>
-  <label class="fl">תרופה</label>
-  <input class="f" id="rxMed" autocomplete="off" placeholder="שם התרופה">
-  <label class="fl">מינון והוראות</label>
-  <textarea class="f" id="rxDose" placeholder="כמה, מתי, איך"></textarea>
-  <label class="fl">רופא/ה <span style="font-weight:500;color:var(--ink3)">(לא חובה)</span></label>
-  <input class="f" id="rxDoc" autocomplete="off" placeholder="ד״ר…">
-  <label class="fl">תאריך</label>
-  <input class="f num" id="rxDate" dir="ltr" type="date">
-  <label class="fl">הערה <span style="font-weight:500;color:var(--ink3)">(לא חובה)</span></label>
-  <input class="f" id="rxNote" autocomplete="off">
-  <div class="btns"><button class="pri" onclick="saveRx()">שמירה</button><button class="dng" id="rxDel" onclick="delRx()">מחיקה</button><button onclick="dRx.close()">ביטול</button></div>
+  <div class="btns"><button class="pri" id="rxSave" onclick="uploadRx()">העלאה</button><button onclick="cancelRx()">ביטול</button></div>
 </div></dialog>
+
+<!-- prescription viewer -->
+<dialog class="sheet" id="dRxView"><div class="sh">
+  <div class="grab"></div>
+  <h3 id="rxViewTitle">מרשם</h3>
+  <p class="note" id="rxViewMeta"></p>
+  <div class="rxViewBody" id="rxViewBody"></div>
+  <div class="btns"><button class="dng" id="rxDel" onclick="delRx()">מחיקה</button><button onclick="closeRxView()">סגירה</button></div>
+</div></dialog>
+
+<input type="file" id="rxFile" accept="image/*,application/pdf" hidden>
 
 <!-- menu sheet -->
 <dialog class="sheet" id="dMenu"><div class="sh menu">
@@ -505,8 +517,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
-const BUILD='v17-20261112-1729';
-const BUILD_LABEL='גרסה 17 · 12.11.2026';
+const BUILD='v18-20261112-1805';
+const BUILD_LABEL='גרסה 18 · 12.11.2026';
 
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
@@ -516,7 +528,7 @@ function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==nul
 let data=[],tomb=[];function loadLog(){let a=load(KEY,[]);if(!Array.isArray(a))a=[];a=a.filter(e=>e&&e.id);data=a.filter(e=>!e.deleted);tomb=a.filter(e=>e.deleted)}loadLog();
 let names=Object.assign({},DEF,load(NKEY,{}));['A','B'].forEach(b=>{if(names[b]===OLDDEF[b])names[b]=DEF[b]});
 let cur=localStorage.getItem(CKEY)==='B'?'B':'A';
-let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={},logAt=null,clinicPanel='appts',showPast=false,rxBaby='A',editRxId=null;
+let view='home',filter='all',editId=null,undoSnap=null,undoIds=null,bTarget='A',eState={},logAt=null,clinicPanel='appts',showPast=false,rxBaby='A',editRxId=null,rxPending=null;
 const $=id=>document.getElementById(id);
 const persist=()=>localStorage.setItem(KEY,JSON.stringify(data.concat(tomb)));
 const sig=e=>JSON.stringify(e,['id','baby','type','t','ml','kind','end','by','title','place','note']);
@@ -809,7 +821,7 @@ function renderEdit(){
   seg('eKind',[['קטנים','💧 קטנים'],['גדולים','💩 גדולים'],['קטנים + גדולים','שניהם']],eState.kind,v=>{eState.kind=v;renderEdit()});
   const t=eState.type;$('fMl').style.display=t==='bottle'?'':'none';$('fKind').style.display=t==='diaper'?'':'none';$('fEnd').style.display=t==='sleep'?'':'none';$('lTime').textContent=t==='sleep'?'שעת הירדמות':'שעה';
 }
-function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;if(e.type==='appt'&&e.kind==='rx'){openRx(e.id);return}if(e.type==='appt'){openAppt(e.id);return}editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
+function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;if(e.type==='appt'&&e.kind==='rx'){viewRx(e.id);return}if(e.type==='appt'){openAppt(e.id);return}editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
   $('eTitle').textContent='עריכת רישום';$('eDel').style.display='';$('eMl').value=e.ml||'';$('eTime').value=toLocal(e.t);$('eEnd').value=e.end?toLocal(e.end):'';renderEdit();haptic(6);dEdit.showModal()}
 function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים',by:me};fillBy();
   $('eTitle').textContent='רישום ידני';$('eDel').style.display='none';$('eMl').value='';$('eTime').value=toLocal(Date.now());$('eEnd').value='';renderEdit();dEdit.showModal()}
@@ -845,25 +857,116 @@ function renderHomeAppts(){const el=$('homeAppts');if(!el)return;const list=upco
   el.innerHTML=`<button type="button" class="glass apptCard" onclick="goClinic('appts')"><div class="apptH"><b>📅 תורים קרובים</b><span class="chev">‹</span></div>${rows}${more}</button>`}
 
 function goClinic(panel){if(panel)clinicPanel=panel;if(view==='clinic'){render();window.scrollTo({top:0,behavior:'smooth'});haptic(5)}else go('clinic')}
-function clinicAdd(){if(clinicPanel==='rx')openRx();else openAppt()}
+function clinicAdd(){if(clinicPanel==='rx')pickRxFile();else openAppt()}
+function pickRxFile(){const inp=$('rxFile');if(!inp)return;inp.value='';inp.click()}
 function renderClinic(){seg('clinicSeg',[['appts','תורים'],['rx','מרשמים']],clinicPanel,v=>{clinicPanel=v;showPast=showPast&&v==='appts';renderClinic()});
-  const add=$('clinicAdd');if(add)add.textContent=clinicPanel==='rx'?'＋ מרשם':'＋ תור';
+  const add=$('clinicAdd');if(add){add.textContent=clinicPanel==='rx'?'＋ העלאת מרשם':'＋ תור';add.classList.toggle('rxAdd',clinicPanel==='rx')}
   if(clinicPanel==='rx')renderClinicRx();else renderClinicAppts()}
 function renderClinicAppts(){const el=$('clinicBody');if(!el)return;const up=upcomingAppts(),past=pastAppts();
   let h=up.length?apptGroupsHTML(up):'<div class="glass" style="margin-top:6px">'+empty('📅','אין תורים קרובים. תור חדש יקבל תזכורת בטלגרם בבוקר של אותו יום.')+'</div>';
   if(past.length){h+=`<button type="button" class="pastBtn" onclick="togglePast()">${showPast?'הסתר תורים קודמים':'הצג תורים קודמים · '+past.length}</button>`;if(showPast)h+=apptGroupsHTML(past)}
   el.innerHTML=h}
 function togglePast(){showPast=!showPast;renderClinic();haptic(5)}
-function renderClinicRx(){const el=$('clinicBody');if(!el)return;const list=allRx();
-  if(!list.length){el.innerHTML='<div class="glass" style="margin-top:6px">'+empty('💊','אין מרשמים עדיין. אפשר להוסיף תרופה עם מינון והוראות.')+'</div>';return}
-  el.innerHTML='<div class="glass list" style="margin-top:8px">'+list.map(rxItemHTML).join('')+'</div>'}
-function rxItemHTML(e){const x=unpackRxExtra(e.note);const sub=[e.place,x.doctor,x.note].filter(Boolean).join(' · ');
-  return`<button class="it" onclick="openRx('${e.id}')"><span class="tm num">${dmy(e.t)}</span><span class="ic rx">💊</span><span class="tx"><b>${esc(e.title||'מרשם')}</b>${sub?'<small>'+esc(sub)+'</small>':''}</span><span class="bp ${e.baby}">${esc(apptBabyLabel(e))}</span></button>`}
-const RX_DOC='רופא: ';
-function packRxExtra(doctor,note){doctor=(doctor||'').trim();note=(note||'').trim();if(doctor&&note)return RX_DOC+doctor+'\n'+note;if(doctor)return RX_DOC+doctor;return note}
-function unpackRxExtra(s){s=String(s||'');if(s.startsWith(RX_DOC)){const i=s.indexOf('\n');if(i<0)return{doctor:s.slice(RX_DOC.length).trim(),note:''};return{doctor:s.slice(RX_DOC.length,i).trim(),note:s.slice(i+1)}}return{doctor:'',note:s}}
+function renderClinicRx(skipFill){const el=$('clinicBody');if(!el)return;const list=allRx();
+  if(!list.length){el.innerHTML='<div class="glass" style="margin-top:6px">'+empty('📄','אין מרשמים עדיין. אפשר להעלות צילום או PDF של המרשם.')+'</div>';if(!skipFill)fillRxThumbs();return}
+  el.innerHTML='<div class="glass list" style="margin-top:8px">'+list.map(rxItemHTML).join('')+'</div>';
+  if(!skipFill)fillRxThumbs()}
+function rxWhen(e){const day=apptDayLabel(e.t);return day==='היום'?('היום · <span class="num">'+hm(e.t)+'</span>'):(day+' · <span class="num">'+dmy(e.t)+'</span>')}
+function rxItemHTML(e){const fileId=e.place||'',mime=e.note||'',thumb=fileId&&rxThumbs[fileId];
+  const isPdf=mime==='application/pdf'||/\.pdf$/i.test(e.title||'');
+  const ic=thumb?`<img class="rxThumb" alt="" src="${thumb}">`:isPdf?'<span class="rxPdf">PDF</span>':'<span class="ic rx">📄</span>';
+  return`<button class="it" onclick="viewRx('${e.id}')">${ic}<span class="tx"><b>${rxWhen(e)}</b></span><span class="bp ${e.baby}">${esc(apptBabyLabel(e))}</span></button>`}
+const RX_MAX_PX=1600,RX_JPEG_Q=.8,RX_MAX_PDF=10*1024*1024,rxThumbs={};
+function isRxPdf(f){return f&&(f.type==='application/pdf'||/\.pdf$/i.test(f.name||''))}
+function isRxImage(f){const t=(f&&f.type||'');return t.indexOf('image/')===0&&t.indexOf('image/svg')!==0}
+function rxFileName(file,mime){let n=String(file&&file.name||'').replace(/[/\\?%*:|"<>]/g,' ').replace(/\s+/g,' ').trim();
+  if(mime==='image/jpeg'){if(!n)n='מרשם.jpg';else n=n.replace(/\.[^.]+$/,'')+'.jpg'}
+  else if(!n)n=mime==='application/pdf'?'מרשם.pdf':'מרשם';
+  return n.slice(0,120)}
+function rxDbOpen(){return new Promise((res,rej)=>{try{const r=indexedDB.open('twins_rx_v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files')};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function rxCacheGet(id){try{const db=await rxDbOpen();return await new Promise((res,rej)=>{const q=db.transaction('files','readonly').objectStore('files').get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}catch(e){return null}}
+async function rxCacheSet(id,val){try{const db=await rxDbOpen();await new Promise((res,rej)=>{const q=db.transaction('files','readwrite').objectStore('files').put(val,id);q.onsuccess=()=>res();q.onerror=()=>rej(q.error)})}catch(e){}}
+async function fillRxThumbs(){if(fillRxThumbs._busy)return;fillRxThumbs._busy=true;
+  try{let need=false;for(const e of allRx()){const id=e.place;if(!id||rxThumbs[id])continue;const c=await rxCacheGet(id);
+    if(c&&c.thumb){rxThumbs[id]=c.thumb;need=true}
+    else if(c&&c.blob&&String(c.mime||'').indexOf('image/')===0){try{rxThumbs[id]=URL.createObjectURL(c.blob);need=true}catch(x){}}}
+    if(need&&clinicPanel==='rx'&&view==='clinic')renderClinicRx(true)}
+  finally{fillRxThumbs._busy=false}}
+function blobToB64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const s=String(r.result),i=s.indexOf(',');res(i>=0?s.slice(i+1):s)};r.onerror=()=>rej(r.error);r.readAsDataURL(blob)})}
+function blobToThumb(blob,max){return new Promise(res=>{if(!(blob&&String(blob.type||'').indexOf('image/')===0)){res('');return}
+  const u=URL.createObjectURL(blob),img=new Image();max=max||96;
+  img.onload=()=>{try{const sc=max/Math.max(img.naturalWidth,img.naturalHeight,1);const w=Math.max(1,Math.round(img.naturalWidth*Math.min(1,sc))),h=Math.max(1,Math.round(img.naturalHeight*Math.min(1,sc)));
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',.7))}catch(e){res('')}URL.revokeObjectURL(u)};
+  img.onerror=()=>{URL.revokeObjectURL(u);res('')};img.src=u})}
+function compressImage(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{const done=()=>URL.revokeObjectURL(u);
+    try{let w=img.naturalWidth,h=img.naturalHeight;const m=Math.max(w,h,1);if(m>RX_MAX_PX){const sc=RX_MAX_PX/m;w=Math.round(w*sc);h=Math.round(h*sc)}
+      const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);
+      const tw=96,th=Math.max(1,Math.round(h*(tw/Math.max(w,1))));const tc=document.createElement('canvas');tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(c,0,0,tw,th);const thumb=tc.toDataURL('image/jpeg',.7);
+      const finish=blob=>{done();if(!blob){rej(new Error('compress'));return}res({blob,mime:'image/jpeg',name:rxFileName(file,'image/jpeg'),thumb})}
+      if(c.toBlob)c.toBlob(finish,'image/jpeg',RX_JPEG_Q);else{const d=c.toDataURL('image/jpeg',RX_JPEG_Q);const i=d.indexOf(',');const bin=atob(d.slice(i+1));const arr=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);finish(new Blob([arr],{type:'image/jpeg'}))}}
+    catch(e){done();rej(e)}};
+  img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('image'))};img.src=u})}
+async function onRxFile(ev){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(!f)return;
+  if(isRxPdf(f)){if(f.size>RX_MAX_PDF){toast('הקובץ גדול מדי. אפשר להעלות עד 10 MB.',false);return}rxPending={blob:f,mime:'application/pdf',name:rxFileName(f,'application/pdf'),thumb:null}}
+  else if(isRxImage(f)){try{rxPending=await compressImage(f)}catch(e){toast('לא הצלחנו לקרוא את התמונה.',false);return}}
+  else{toast('אפשר להעלות תמונה או קובץ PDF.',false);return}
+  openRxUpload()}
+function openRxUpload(){if(typeof dAppt!=='undefined'&&dAppt.open)dAppt.close();if(typeof dRxView!=='undefined'&&dRxView.open)closeRxView();
+  rxBaby=cur||'A';const prev=$('rxPrev');if(prev&&prev._url){URL.revokeObjectURL(prev._url);prev._url=null}
+  if(!prev)return;
+  if(rxPending.thumb)prev.innerHTML='<img class="rxPrevImg" alt="" src="'+rxPending.thumb+'">';
+  else if(String(rxPending.mime||'').indexOf('image/')===0){const u=URL.createObjectURL(rxPending.blob);prev.innerHTML='<img class="rxPrevImg" alt="" src="'+u+'">';prev._url=u}
+  else prev.innerHTML='<div class="rxPdf lg">PDF</div>';
+  $('rxPrevName').textContent=rxPending.name||'מרשם';
+  const btn=$('rxSave');if(btn){btn.disabled=false;btn.textContent='העלאה'}
+  renderRxBaby();haptic(6);dRx.showModal()}
+function renderRxBaby(){seg('rxBaby',[['A',names.A],['B',names.B],['AB','שניהם']],rxBaby,v=>{rxBaby=v;renderRxBaby()})}
+function cancelRx(){if(dRx.open)dRx.close();const prev=$('rxPrev');if(prev&&prev._url){URL.revokeObjectURL(prev._url);prev._url=null}rxPending=null}
+function rxUploadError(err){const c=err&&(err.code||err.message)||'';
+  if(c==='unknown op'||/unknown op/.test(c))return'העלאת המרשם עדיין לא זמינה בשרת. נסו שוב אחרי העדכון.';
+  if(err&&err.auth)return'שגיאת הרשאה בסנכרון.';
+  if(c==='too large'||/too large/.test(c))return'הקובץ גדול מדי. אפשר להעלות עד 10 MB.';
+  if(c==='bad mime')return'אפשר להעלות תמונה או קובץ PDF.';
+  return'לא הצלחנו להעלות את המרשם. בדקו את החיבור ונסו שוב.'}
+async function uploadRx(){const pending=rxPending;if(!pending||!pending.blob){toast('בחרו קובץ להעלאה.',false);return}
+  if(!sync){toast('העלאת מרשמים דורשת סנכרון בין המכשירים.',false);return}
+  const btn=$('rxSave');if(btn){btn.disabled=true;btn.textContent='מעלה…'}
+  try{const b64=await blobToB64(pending.blob);
+    const j=await api({op:'uploadFile',name:pending.name,mime:pending.mime,data:b64});
+    if(!j||!j.fileId)throw new Error('no fileId');
+    await rxCacheSet(j.fileId,{mime:pending.mime,blob:pending.blob,name:pending.name,thumb:pending.thumb||''});
+    if(pending.thumb)rxThumbs[j.fileId]=pending.thumb;
+    const e=mk({id:uid(),baby:rxBaby,type:'appt',kind:'rx',t:Date.now(),title:pending.name,place:j.fileId,note:pending.mime});
+    snap();data.push(e);cancelRx();clinicPanel='rx';
+    if(view!=='clinic'){commit('✓ המרשם הועלה ל'+apptBabyLabel(e));go('clinic')}else commit('✓ המרשם הועלה ל'+apptBabyLabel(e))}
+  catch(err){toast(rxUploadError(err),false);if(btn){btn.disabled=false;btn.textContent='העלאה'}}}
+let viewRxUrl=null;
+function closeRxView(){if(viewRxUrl){URL.revokeObjectURL(viewRxUrl);viewRxUrl=null}const body=$('rxViewBody');if(body)body.innerHTML='';if(typeof dRxView!=='undefined'&&dRxView.open)dRxView.close()}
+function b64ToBlob(b64,mime){const bin=atob(b64);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime||'application/octet-stream'})}
+async function viewRx(id){if(typeof dAppt!=='undefined'&&dAppt.open)dAppt.close();if(typeof dRx!=='undefined'&&dRx.open)cancelRx();
+  const e=id?data.find(x=>x.id===id&&isRx(x)):null;if(!e)return;
+  editRxId=e.id;$('rxViewTitle').textContent='מרשם';
+  $('rxViewMeta').textContent=apptDayLabel(e.t)+' · '+dmy(e.t)+' · '+hm(e.t)+' · '+apptBabyLabel(e);
+  $('rxViewBody').innerHTML='<p class="note">טוען…</p>';haptic(6);dRxView.showModal();
+  const fileId=e.place;if(!fileId){$('rxViewBody').innerHTML='<p class="note">אין קובץ למרשם הזה.</p>';return}
+  let mime=e.note||'',blob=null,name=e.title||'מרשם';
+  const cached=await rxCacheGet(fileId);
+  if(cached&&cached.blob){blob=cached.blob;mime=cached.mime||mime;name=cached.name||name}
+  else{try{if(!sync){$('rxViewBody').innerHTML='<p class="note">צריך סנכרון כדי לפתוח את הקובץ במכשיר הזה.</p>';return}
+      const j=await api({op:'getFile',fileId});mime=j.mime||mime;if(!j.data)throw new Error('empty');
+      blob=b64ToBlob(j.data,mime);name=j.name||name;
+      const thumb=String(mime||'').indexOf('image/')===0?(await blobToThumb(blob)):'';
+      await rxCacheSet(fileId,{mime,blob,name,thumb});if(thumb){rxThumbs[fileId]=thumb;if(clinicPanel==='rx'&&view==='clinic')renderClinicRx(true)}}
+    catch(err){const c=err&&(err.code||err.message)||'';const msg=/unknown op/.test(c)?'הצגת המרשם עדיין לא זמינה בשרת. נסו שוב אחרי העדכון.':'לא הצלחנו לפתוח את הקובץ. בדקו את החיבור ונסו שוב.';
+      $('rxViewBody').innerHTML='<p class="note">'+esc(msg)+'</p>';toast(msg,false);return}}
+  if(viewRxUrl){URL.revokeObjectURL(viewRxUrl);viewRxUrl=null}viewRxUrl=URL.createObjectURL(blob);
+  if(String(mime||'').indexOf('image/')===0)$('rxViewBody').innerHTML='<img class="rxViewImg" alt="" src="'+viewRxUrl+'">';
+  else $('rxViewBody').innerHTML='<iframe class="rxViewPdf" title="מרשם" src="'+viewRxUrl+'"></iframe>'}
+function delRx(){if(!editRxId||!confirm('למחוק את המרשם?'))return;snap();data=data.filter(x=>x.id!==editRxId);closeRxView();clinicPanel='rx';commit('🗑️ המרשם נמחק');if(view!=='clinic')go('clinic')}
+if($('rxFile'))$('rxFile').addEventListener('change',onRxFile);
 
-function openAppt(id){if(typeof dRx!=='undefined'&&dRx.open)dRx.close();
+function openAppt(id){if(typeof dRx!=='undefined'&&dRx.open)cancelRx();if(typeof dRxView!=='undefined'&&dRxView.open)closeRxView();
   const e=id?data.find(x=>x.id===id&&isVisit(x)):null;
   editApptId=e?e.id:null;apBaby=e?(e.baby==='B'?'B':e.baby==='AB'?'AB':'A'):(cur||'A');
   $('apTitle').textContent=e?'עריכת תור':'תור חדש';
@@ -884,32 +987,6 @@ function saveAppt(){const title=$('apDoc').value.trim();if(!title){alert('צרי
   snap();if(editApptId){const i=data.findIndex(x=>x.id===editApptId);if(i>=0)data[i]=e;else data.push(e)}else data.push(e);
   dAppt.close();clinicPanel='appts';if(view!=='clinic'){commit(editApptId?'✓ התור עודכן':'✓ התור נשמר ל'+apptBabyLabel(e));go('clinic')}else commit(editApptId?'✓ התור עודכן':'✓ התור נשמר ל'+apptBabyLabel(e))}
 function delAppt(){if(!editApptId||!confirm('למחוק את התור?'))return;snap();data=data.filter(x=>x.id!==editApptId);dAppt.close();clinicPanel='appts';commit('🗑️ התור נמחק');if(view!=='clinic')go('clinic')}
-
-function openRx(id){if(typeof dAppt!=='undefined'&&dAppt.open)dAppt.close();
-  const e=id?data.find(x=>x.id===id&&isRx(x)):null;
-  editRxId=e?e.id:null;rxBaby=e?(e.baby==='B'?'B':e.baby==='AB'?'AB':'A'):(cur||'A');
-  $('rxTitle').textContent=e?'עריכת מרשם':'מרשם חדש';
-  $('rxDel').style.display=e?'':'none';
-  const today=ymdOf(Date.now());const min=BIRTH_YMD;const max=today;
-  const t=e?e.t:Date.now();
-  $('rxDate').min=e&&ymdOf(e.t)<min?ymdOf(e.t):min;$('rxDate').max=max;
-  $('rxDate').value=ymdOf(t);
-  const x=unpackRxExtra(e&&e.note);
-  $('rxMed').value=e&&e.title?e.title:'';$('rxDose').value=e&&e.place?e.place:'';
-  $('rxDoc').value=x.doctor;$('rxNote').value=x.note;
-  renderRxBaby();haptic(6);dRx.showModal()}
-function renderRxBaby(){seg('rxBaby',[['A',names.A],['B',names.B],['AB','שניהם']],rxBaby,v=>{rxBaby=v;renderRxBaby()})}
-function saveRx(){const med=$('rxMed').value.trim();if(!med){alert('צריך למלא שם תרופה');return}
-  const dose=$('rxDose').value.trim();if(!dose){alert('צריך למלא מינון והוראות');return}
-  const ymd=$('rxDate').value;if(!ymd){alert('צריך לבחור תאריך');return}
-  const prev=editRxId?data.find(x=>x.id===editRxId):null;
-  const t=combineAppt(ymd,prev?hmInput(prev.t):hmInput(Date.now()));
-  if(!t||isNaN(t)){alert('תאריך לא תקין');return}
-  const e=mk({id:editRxId||uid(),baby:rxBaby,type:'appt',kind:'rx',t,title:med,place:dose});
-  const extra=packRxExtra($('rxDoc').value,$('rxNote').value);if(extra)e.note=extra;
-  snap();if(editRxId){const i=data.findIndex(x=>x.id===editRxId);if(i>=0)data[i]=e;else data.push(e)}else data.push(e);
-  dRx.close();clinicPanel='rx';if(view!=='clinic'){commit(editRxId?'✓ המרשם עודכן':'✓ המרשם נשמר ל'+apptBabyLabel(e));go('clinic')}else commit(editRxId?'✓ המרשם עודכן':'✓ המרשם נשמר ל'+apptBabyLabel(e))}
-function delRx(){if(!editRxId||!confirm('למחוק את המרשם?'))return;snap();data=data.filter(x=>x.id!==editRxId);dRx.close();clinicPanel='rx';commit('🗑️ המרשם נמחק');if(view!=='clinic')go('clinic')}
 
 /* names / menu / export */
 function renameDlg(){$('nA').value=names.A;$('nB').value=names.B;dNames.showModal()}
@@ -949,7 +1026,7 @@ async function checkAppUpdate(){
   }catch(e){}
   finally{checkAppUpdate._busy=false}
 }
-function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dAppt!=='undefined'&&dAppt.open)||(typeof dRx!=='undefined'&&dRx.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
+function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dAppt!=='undefined'&&dAppt.open)||(typeof dRx!=='undefined'&&dRx.open)||(typeof dRxView!=='undefined'&&dRxView.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
 document.addEventListener('visibilitychange',onAppResume);
 window.addEventListener('pageshow',onAppResume);
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
@@ -976,7 +1053,8 @@ function cleanRec(r){const isAp=String(r.type)==='appt';const baby=isAp?(r.baby=
   return n}
 async function api(body){
   const res=await fetch(sync.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:sync.k},body)),redirect:'follow',cache:'no-store'});
-  const j=await res.json();if(!j||!j.ok){const err=new Error(j&&j.error||'error');err.auth=j&&j.error==='auth';throw err}return j}
+  let j=null;try{j=await res.json()}catch(e){throw new Error('error')}
+  if(!j||!j.ok){const err=new Error(j&&j.error||'error');err.auth=j&&j.error==='auth';err.code=j&&j.error;throw err}return j}
 function mergeRemote(recs){let changed=false;
   for(const raw of recs||[]){if(!raw||!raw.id)continue;const r=cleanRec(raw);
     const loc=data.find(e=>e.id===r.id)||tomb.find(e=>e.id===r.id);
