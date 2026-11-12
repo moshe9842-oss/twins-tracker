@@ -226,6 +226,7 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .nudge,.timeClr{padding:7px 11px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink2);background:var(--card);border:1px solid var(--line)}
 .timeClr{width:32px;height:32px;padding:0;font-size:18px;display:none;place-items:center;line-height:1}
 .timeClr.on{display:grid}
+#tDate{margin-top:8px}
 .tQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .tQuick button{padding:13px 0;border-radius:14px;background:var(--line);font-size:15px;font-weight:800}
 .tQuick button:active,.nudge:active,.timeChip:active,.timeClr:active,.mlStep button:active{transform:scale(.95)}
@@ -339,6 +340,9 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <dialog class="sheet" id="dTime"><div class="sh">
   <div class="grab"></div>
   <h3>שעת הרישום</h3>
+  <label class="fl">יום</label>
+  <div class="seg" id="tDaySeg"></div>
+  <input class="f num" id="tDate" type="date" oninput="onTDate()">
   <label class="fl">שעה</label>
   <input class="f num" id="tTime" type="time" oninput="paintTHint()">
   <div class="tQuick">
@@ -485,12 +489,12 @@ function snap(){undoSnap=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=
 function commit(msg){if(undoSnap){const after=new Map(data.map(e=>[e.id,JSON.stringify(e)]));undoIds=[...new Set([...undoSnap.keys(),...after.keys()])].filter(id=>undoSnap.get(id)!==after.get(id))}save();render();toast(msg,true);haptic(15)}
 function undo(){if(!undoSnap||!undoIds)return;for(const id of undoIds){const s=undoSnap.get(id),i=data.findIndex(e=>e.id===id);if(s){const r=JSON.parse(s);if(i>=0)data[i]=r;else data.push(r)}else if(i>=0)data.splice(i,1)}undoSnap=null;undoIds=null;save();render();toast('הפעולה בוטלה',false);haptic(8)}
 function who(bs){return bs.length>1?'לשניהם':'ל'+names[bs[0]]}
-function logBottle(bs,ml,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+hm(t))}
-function logDiaper(bs,kind,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+hm(t))}
-function toggleSleep(b){const s=openSleep(b),t=logTime();if(s&&t<s.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+hm(t))}}
+function logBottle(bs,ml,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'bottle',t,ml})));commit('🍼 '+ml+' סמ״ק '+who(bs)+' · '+atStamp(t))}
+function logDiaper(bs,kind,t){snap();t=t||logTime();bs.forEach(b=>data.push(mk({id:uid(),baby:b,type:'diaper',t,kind})));commit((kind==='קטנים'?'💧 ':'💩 ')+kind+' '+who(bs)+' · '+atStamp(t))}
+function toggleSleep(b){const s=openSleep(b),t=logTime();if(s&&t<s.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();if(s){s.end=t;commit('☀️ '+names[b]+' התעורר/ה · ישן/ה '+dur(s.end-s.t)+' · '+atStamp(t))}else{data.push(mk({id:uid(),baby:b,type:'sleep',t}));commit('😴 '+names[b]+' נרדם/ה · '+atStamp(t))}}
 function sleepBoth(){const t=logTime(),sA=openSleep('A'),sB=openSleep('B');
-  if(sA&&sB){if(t<sA.t||t<sB.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+hm(t))}
-  else{snap();['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+hm(t))}}
+  if(sA&&sB){if(t<sA.t||t<sB.t){toast('שעת ההתעוררות לפני שעת ההירדמות',false);return}snap();sA.end=t;sB.end=t;commit('☀️ שניהם התעוררו · '+atStamp(t))}
+  else{snap();['A','B'].forEach(b=>{if(!openSleep(b))data.push(mk({id:uid(),baby:b,type:'sleep',t}))});commit('😴 שניהם נרדמו · '+atStamp(t))}}
 
 /* ---------- bottle sheet ---------- */
 const AMOUNTS=[10,20,30,40,50,60,70,80,90,100,120,150];
@@ -502,23 +506,39 @@ function bSync(){const v=parseInt($('bMl').value);$('qs').innerHTML=AMOUNTS.map(
 function pickMl(a){$('bMl').value=a;bSync();haptic(6)}
 function stepMl(d){const v=Math.max(0,(parseInt($('bMl').value)||0)+d);$('bMl').value=v||'';bSync();haptic(5)}
 function stepEditMl(d){const v=Math.max(0,(parseInt($('eMl').value)||0)+d);$('eMl').value=v||'';haptic(5)}
-function hmInput(t){const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function timeFromInput(str){if(!str)return Date.now();const[h,m]=String(str).split(':').map(Number);if(!isFinite(h)||!isFinite(m))return Date.now();const d=new Date();d.setHours(h,m,0,0);let t=d.getTime();if(t>Date.now()+60000)t-=DAY;if(Math.abs(t-Date.now())<60000)return Date.now();return t}
+const BIRTH_YMD='2026-11-10';
+function pad2(n){return String(n).padStart(2,'0')}
+function ymdOf(t){const d=new Date(t);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function parseYmd(s){const[Y,M,D]=String(s).split('-').map(Number);const d=new Date(Y,M-1,D,0,0,0,0);return d.getTime()}
+function addDaysYmd(s,n){const d=new Date(parseYmd(s));d.setDate(d.getDate()+n);return ymdOf(d.getTime())}
+function clampYmd(s){const min=BIRTH_YMD,max=ymdOf(Date.now());return!s||s<min?min:s>max?max:s}
+function clampAt(t){return Math.min(Date.now(),Math.max(parseYmd(BIRTH_YMD),t))}
+function combineDayTime(ymd,hmStr,shiftToday){ymd=clampYmd(ymd||ymdOf(Date.now()));const[h,m]=String(hmStr||'00:00').split(':').map(Number);const d=new Date(parseYmd(ymd));d.setHours(isFinite(h)?h:0,isFinite(m)?m:0,0,0);let t=d.getTime();if(shiftToday&&ymd===ymdOf(Date.now())){if(t>Date.now()+60000)t-=DAY;if(Math.abs(t-Date.now())<60000)return Date.now()}return t}
+function daysAgo(t){return Math.round((startOfDay(Date.now())-startOfDay(t))/DAY)}
+function hmInput(t){const d=new Date(t);return pad2(d.getHours())+':'+pad2(d.getMinutes())}
+function timeFromInput(str){return combineDayTime(ymdOf(Date.now()),str,true)}
 function logTime(){return logAt==null?Date.now():logAt}
-function setLogAt(t){if(t==null||Math.abs(t-Date.now())<60000)logAt=null;else logAt=t;syncTimeUI()}
-function atLabel(t){const now=Date.now();t=t==null?now:t;if(logAt==null||Math.abs(t-now)<60000)return'עכשיו · '+hm(t);if(startOfDay(t)<startOfDay(now))return'אתמול · '+hm(t);return hm(t)}
-function timeHint(t){if(Math.abs(t-Date.now())<60000)return'הרישום יישמר לפי השעה הנוכחית.';if(startOfDay(t)<startOfDay(Date.now()))return'השעה הזו כבר אחרי חצות, לכן תירשם על אתמול.';return'הרישומים יישמרו בשעה הזו עד חזרה ל״עכשיו״.'}
+function setLogAt(t){if(t==null||(Math.abs(t-Date.now())<60000&&daysAgo(t)===0))logAt=null;else logAt=clampAt(t);syncTimeUI()}
+function atLabel(t){const now=Date.now();t=t==null?now:t;if(logAt==null||(Math.abs(t-now)<60000&&daysAgo(t)===0))return'עכשיו · '+hm(t);const n=daysAgo(t);if(n===0)return hm(t);if(n===1)return'אתמול · '+hm(t);if(n===2)return'שלשום · '+hm(t);return dmy(t)+' · '+hm(t)}
+function atStamp(t){const n=daysAgo(t);if(n<=0&&Math.abs(t-Date.now())<60000)return hm(t);if(n===0)return hm(t);if(n===1)return'אתמול '+hm(t);if(n===2)return'שלשום '+hm(t);return dmy(t)+' '+hm(t)}
+function timeHint(t){if(Math.abs(t-Date.now())<60000&&daysAgo(t)===0)return'הרישום יישמר לפי השעה הנוכחית.';const n=daysAgo(t);if(n===0)return'הרישומים יישמרו בשעה הזו עד חזרה ל״עכשיו״.';if(n===1)return'הרישומים יישמרו על אתמול, עד חזרה ל״עכשיו״.';if(n===2)return'הרישומים יישמרו על שלשום, עד חזרה ל״עכשיו״.';return'הרישומים יישמרו על '+dmy(t)+', עד חזרה ל״עכשיו״.'}
 function nudgeLog(min){setLogAt((logAt==null?Date.now():logAt)+min*60000);haptic(5)}
 function syncTimeUI(){const row=$('timeRow');if(!row)return;row.classList.toggle('show',view==='home'||view==='baby');const custom=logAt!=null;$('timeChip').classList.toggle('on',custom);$('timeLbl').textContent=atLabel(logTime());$('timeClr').classList.toggle('on',custom)}
-function openTimeDlg(){$('tTime').value=hmInput(logTime());paintTHint();haptic(6);dTime.showModal()}
-function paintTHint(){$('tHint').textContent=timeHint(timeFromInput($('tTime').value))}
-function paintBHint(){$('bTimeHint').textContent=timeHint(timeFromInput($('bTime').value))}
-function applyTime(){setLogAt(timeFromInput($('tTime').value));dTime.close();haptic(8)}
+function fillTimeSheet(t){t=clampAt(t);$('tDate').min=BIRTH_YMD;$('tDate').max=ymdOf(Date.now());$('tDate').value=ymdOf(t);$('tTime').value=hmInput(t);renderTDays();paintTHint()}
+function openTimeDlg(){fillTimeSheet(logTime());haptic(6);dTime.showModal()}
+function renderTDays(){const today=ymdOf(Date.now()),val=clampYmd($('tDate').value||today);const opts=[['0','היום'],['1','אתמול'],['2','שלשום']].filter(([n])=>addDaysYmd(today,-n)>=BIRTH_YMD);let sel='';if(val===today)sel='0';else if(val===addDaysYmd(today,-1))sel='1';else if(val===addDaysYmd(today,-2))sel='2';const el=$('tDaySeg');el.innerHTML=opts.map(([n,l])=>`<button type="button" class="${n===sel?'on':''}" data-n="${n}">${l}</button>`).join('');el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);$('tDate').value=addDaysYmd(today,-b.dataset.n);renderTDays();paintTHint()})}
+function onTDate(){$('tDate').value=clampYmd($('tDate').value);renderTDays();paintTHint()}
+function sheetAt(){const ymd=clampYmd($('tDate').value||ymdOf(Date.now()));return combineDayTime(ymd,$('tTime').value,ymd===ymdOf(Date.now()))}
+function paintTHint(){$('tHint').textContent=timeHint(sheetAt())}
+function paintBHint(){$('bTimeHint').textContent=timeHint(bottleAt())}
+function applyTime(){setLogAt(sheetAt());dTime.close();haptic(8)}
 function applyNow(){setLogAt(null);dTime.close();haptic(8)}
-function nudgeTimeField(min){const t=timeFromInput($('tTime').value)+min*60000;$('tTime').value=hmInput(t);paintTHint();haptic(5)}
-function setBTime(t){if(t==null)t=Date.now();$('bTime').value=hmInput(t);paintBHint()}
-function nudgeBTime(min){setBTime(timeFromInput($('bTime').value)+min*60000);haptic(5)}
-function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;const t=timeFromInput($('bTime').value);setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)}
+function nudgeTimeField(min){fillTimeSheet(sheetAt()+min*60000);haptic(5)}
+let bDay=null;
+function setBTime(t){if(t==null)t=Date.now();t=clampAt(t);bDay=ymdOf(t);$('bTime').value=hmInput(t);paintBHint()}
+function bottleAt(){const ymd=bDay||ymdOf(Date.now());return combineDayTime(ymd,$('bTime').value,ymd===ymdOf(Date.now()))}
+function nudgeBTime(min){setBTime(bottleAt()+min*60000);haptic(5)}
+function saveBottle(){const v=parseInt($('bMl').value);if(!(v>0))return;const t=bottleAt();setLogAt(t);dBottle.close();logBottle(bTarget==='AB'?['A','B']:[bTarget],v,t)}
 
 /* ---------- segmented control ---------- */
 function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
@@ -620,7 +640,7 @@ function renderBaby(){
   $('babyList').innerHTML=items.length?items.map(e=>itemHTML(e,false).replace('<span class="tm num">','<span class="tm num" title="'+dmy(e.t)+'">')).join(''):empty('🌙','אין רישומים עדיין ל'+esc(names[b])+'.');
 }
 
-function dayLabel(d){const t=startOfDay(Date.now());if(d===t)return'היום';if(d===t-DAY||Math.round((t-d)/DAY)===1)return'אתמול';return'יום '+WD[new Date(d).getDay()]}
+function dayLabel(d){const n=Math.round((startOfDay(Date.now())-d)/DAY);if(n===0)return'היום';if(n===1)return'אתמול';if(n===2)return'שלשום';return'יום '+WD[new Date(d).getDay()]}
 function renderLog(){
   seg('filterSeg',[['all','שניהם'],['A',names.A],['B',names.B]],filter,v=>{filter=v;renderLog()});
   const items=data.filter(e=>filter==='all'||e.baby===filter).sort((x,y)=>y.t-x.t);
