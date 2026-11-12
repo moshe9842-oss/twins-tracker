@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -33,8 +34,7 @@
   --sleep:#9a92ec;--sleep2:rgba(154,146,236,.14);--pee:#5cbde0;--poo:#c89c68;--milk:#74a7f0;
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{height:100%;height:100dvh}
-html,body{margin:0;min-height:100%;min-height:100dvh;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;min-height:100dvh;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 input,select,textarea{font-size:16px}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Hebrew","Segoe UI","Heebo","Assistant",Roboto,Arial,sans-serif;color:var(--ink);
   background:var(--bg1);-webkit-font-smoothing:antialiased;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain}
@@ -172,7 +172,7 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .empty{padding:28px 18px;text-align:center;color:var(--ink3);font-size:14px;line-height:1.6}
 .empty .e{font-size:30px;display:block;margin-bottom:6px;opacity:.8}
 /* nav */
-nav{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:80;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;box-sizing:border-box}
+nav{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:80;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;box-sizing:border-box;transform:none;filter:none;contain:none;will-change:auto}
 .navIn{display:flex;gap:4px;padding:6px;border-radius:24px;width:100%;max-width:420px}
 .navIn button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:18px;font-size:11.5px;font-weight:700;color:var(--ink3);transition:background .2s,color .2s}
 .navIn button svg{width:22px;height:22px;stroke:currentColor}
@@ -427,12 +427,16 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <button onclick="dMenu.close();usersDlg()"><i>👥</i>ניהול משתמשים</button>
   <button onclick="dMenu.close();syncLinkDlg()"><i>🔄</i>סנכרון בין מכשירים</button>
   <p class="note" id="storeNote"></p>
+  <p class="note" id="appVer" style="font-size:11px;color:var(--ink3);margin-top:10px"></p>
 </div></dialog>
 
 <div id="rotate"><div><div style="font-size:54px;margin-bottom:12px">📱</div>סובבו את הטלפון לאורך</div></div>
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
+const BUILD='v13-20261112-0850';
+const BUILD_LABEL='גרסה 13 · 12.11.2026';
+
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
 const DEF={A:'בן',B:'בת'};const OLDDEF={A:'תינוק א׳',B:'תינוק ב׳'};
@@ -765,7 +769,27 @@ function exportCSV(){
 
 /* close sheets on backdrop tap */
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
-function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render()}tick();if(!sheetOpen)syncSoon()}
+async function checkAppUpdate(){
+  if(location.protocol==='file:')return;
+  if((typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dMenu!=='undefined'&&dMenu.open)||(typeof dWho!=='undefined'&&dWho.open))return;
+  if(checkAppUpdate._busy)return;checkAppUpdate._busy=true;
+  try{
+    const src=new URL('index.html',location.href);
+    src.searchParams.set('cb',String(Date.now()));
+    const r=await fetch(src.href,{cache:'no-store',headers:{'Cache-Control':'no-store'}});
+    if(!r.ok)return;
+    const text=await r.text();
+    const m=text.match(/const BUILD='([^']+)'/);
+    if(!m||!m[1]||m[1]===BUILD)return;
+    if(sessionStorage.getItem('triedBuild')===m[1])return;
+    sessionStorage.setItem('triedBuild',m[1]);
+    const next=new URL(location.href);
+    next.searchParams.set('v',m[1]);
+    location.replace(next.href);
+  }catch(e){}
+  finally{checkAppUpdate._busy=false}
+}
+function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
 document.addEventListener('visibilitychange',onAppResume);
 window.addEventListener('pageshow',onAppResume);
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
@@ -805,10 +829,11 @@ function applyNames(n){if(!n||!sync||sync.namesPending)return false;if((+n.updat
 async function syncNow(){
   if(!sync)return;if(syncBusy){syncAgain=true;return}
   syncBusy=true;clearTimeout(syncTimer);setDot('busy');
+  let pushed=false;
   try{
     const recs=Object.values(queue);
     if(recs.length){const sent=recs.map(r=>Object.assign({},r,{updated:r.updated||r.t||1}));
-      await api({op:'upsert',records:sent});
+      await api({op:'upsert',records:sent});pushed=true;
       sent.forEach(r=>{const q=queue[r.id];if(q&&(q.updated||q.t||1)===r.updated)delete queue[r.id]});saveQ()}
     if(sync.namesPending){const j=await api({op:'setNames',names:{A:names.A,B:names.B,users:users(),updated:names.updated||Date.now()}});sync.namesPending=0;saveSync();applyNames(j.names)}
     const j=await api({op:'list',since:Math.max(0,(sync.since||0)-60000)});
@@ -816,7 +841,7 @@ async function syncNow(){
     sync.since=+j.now||sync.since;saveSync();syncFail=0;
     if(ch)render();
     setDot(Object.keys(queue).length?'busy':'ok');
-  }catch(e){syncFail++;setDot(e.auth?'err':'off')}
+  }catch(e){syncFail++;setDot(e.auth?'err':(pushed?'ok':'off'))}
   finally{syncBusy=false;
     if(syncAgain){syncAgain=false;syncSoon(50)}
     else syncSoon(syncFail?Math.min(60000,5000*syncFail):20000)}
@@ -861,15 +886,10 @@ document.addEventListener('gesturechange',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait').catch(()=>{})}catch(e){}
 
-(function pinNav(){const n=document.querySelector('nav');if(!n)return;
-  const place=()=>{const vv=window.visualViewport;const gap=vv?Math.max(0,window.innerHeight-(vv.offsetTop+vv.height)):0;n.style.bottom=gap?gap+'px':''};
-  place();
-  if(window.visualViewport){visualViewport.addEventListener('resize',place);visualViewport.addEventListener('scroll',place)}
-  window.addEventListener('resize',place);
-  window.addEventListener('orientationchange',()=>setTimeout(place,80));
-})();
 if(typeof dBottle!=='undefined')dBottle.addEventListener('close',onBottleClosed);
+if($('appVer'))$('appVer').textContent=BUILD_LABEL;
 tick();render();setInterval(tick,1000);setInterval(render,60000);
+checkAppUpdate();
 if(!me)setTimeout(whoDlg,400);
 </script>
 </body>
