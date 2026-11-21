@@ -89,6 +89,14 @@ main{padding:4px 14px 0;max-width:640px;margin:0 auto}
 .chip.sl{background:var(--sleep2);color:var(--sleep)}
 .chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .chip.sl .dot{animation:pulse 1.8s infinite}
+.remindRow{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 0}
+.remindChip{padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;background:var(--line);color:var(--ink2);display:inline-flex;align-items:center;gap:5px;max-width:100%}
+.remindChip.on{background:rgba(194,150,74,.16);color:var(--gold)}
+.remindX{width:26px;height:26px;border-radius:50%;font-size:16px;font-weight:800;color:var(--ink3);background:var(--line);flex:none;line-height:1}
+.rQuick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.rQuick button{padding:13px 8px;border-radius:14px;background:var(--line);font-size:14.5px;font-weight:800}
+.rQuick button:active,.remindChip:active,.remindX:active{transform:scale(.95)}
+.heroInfo .remindRow{justify-content:flex-start;margin-top:10px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .mini{font-size:11.5px;color:var(--ink3);text-align:center;margin-top:6px}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
@@ -499,6 +507,26 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 
 <input type="file" id="rxFile" accept="image/*,application/pdf" hidden>
 
+<!-- feeding reminder -->
+<dialog class="sheet" id="dRemind"><div class="sh">
+  <div class="grab"></div>
+  <h3 id="rmTitle">תזכורת האכלה</h3>
+  <p class="note" id="rmCur" style="display:none"></p>
+  <label class="fl">מתי</label>
+  <div class="rQuick">
+    <button type="button" onclick="quickRemind(30)">בעוד 30 דק׳</button>
+    <button type="button" onclick="quickRemind(60)">שעה</button>
+    <button type="button" onclick="quickRemind(120)">שעתיים</button>
+    <button type="button" onclick="quickRemind(180)">3 שעות</button>
+  </div>
+  <label class="fl">שעה אחרת</label>
+  <div class="whenRow">
+    <input class="f num" id="rmDate" dir="ltr" type="date">
+    <input class="f num" id="rmTime" dir="ltr" type="time">
+  </div>
+  <div class="btns"><button class="pri" onclick="saveRemind()">שמירה</button><button class="dng" id="rmDel" onclick="cancelRemindOpen()" style="display:none">ביטול תזכורת</button><button onclick="dRemind.close()">סגירה</button></div>
+</div></dialog>
+
 <!-- menu sheet -->
 <dialog class="sheet" id="dMenu"><div class="sh menu">
   <div class="grab"></div>
@@ -517,8 +545,8 @@ select.f{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <div id="toast"><span id="toastTx"></span><button id="toastUndo" onclick="undo()">ביטול</button></div>
 
 <script>
-const BUILD='v18-20261112-1805';
-const BUILD_LABEL='גרסה 18 · 12.11.2026';
+const BUILD='v19-20261121-1915';
+const BUILD_LABEL='גרסה 19 · 21.11.2026';
 
 const KEY='twins_log_v1',NKEY='twins_names_v1',CKEY='twins_cur';
 const BIRTH={A:Date.parse('2026-11-10T13:00:00+02:00'),B:Date.parse('2026-11-10T12:56:00+02:00')};
@@ -568,10 +596,10 @@ function calAge(t0,now){const b=ilParts(t0);let mo=(ilParts(now).year-b.year)*12
 function ageTxt(b,now){now=now==null?Date.now():now;const t0=BIRTH[b];if(!t0)return'';const ms=now-t0;if(ms<0)return'';const g=b==='A'?'בן':'בת',mins=Math.floor(ms/60000),hrs=Math.floor(ms/H),days=Math.floor(ms/DAY);if(mins<1)return b==='A'?'נולד עכשיו':'נולדה עכשיו';if(hrs<1)return g+' '+hebN(mins,U.m);if(hrs<24)return g+' '+hebN(hrs,U.h);if(days<14){const h=Math.floor((ms%DAY)/H);return g+' '+hebN(days,U.d)+(h?' · '+hebN(h,U.h):'')}const cal=calAge(t0,now);if(cal.months>=3)return g+' '+hebN(cal.months,U.mo)+(cal.days?' '+hebAnd(cal.days,U.d):'');const w=Math.floor(days/7),r=days%7;return g+' '+hebN(w,U.w)+(r?' '+hebAnd(r,U.d):'')}
 
 function isFeed(e){return e.type==='bottle'||e.type==='feed'}
-function isCare(e){return e&&e.type!=='appt'}
+function isCare(e){return e&&e.type!=='appt'&&e.type!=='remind'}
 function lastOf(b,f){let r=null;for(const e of data)if(e.baby===b&&f(e)&&(!r||e.t>r.t))r=e;return r}
 function openSleep(b){return lastOf(b,e=>e.type==='sleep'&&!e.end)}
-function icon(e){if(e.type==='bottle'||e.type==='feed')return'🍼';if(e.type==='diaper')return e.kind==='קטנים'?'💧':'💩';if(e.type==='sleep')return'😴';if(e.type==='appt')return e.kind==='rx'?'💊':'📅';return'•'}
+function icon(e){if(e.type==='bottle'||e.type==='feed')return'🍼';if(e.type==='diaper')return e.kind==='קטנים'?'💧':'💩';if(e.type==='sleep')return'😴';if(e.type==='appt')return e.kind==='rx'?'💊':'📅';if(e.type==='remind')return'⏰';return'•'}
 function icCls(e){if(e.type==='diaper')return e.kind==='קטנים'?'diaper':'poo';if(e.type==='appt'&&e.kind==='rx')return'rx';return e.type}
 function title(e){
   if(e.type==='bottle')return'בקבוק · '+e.ml+' סמ״ק';
@@ -579,6 +607,7 @@ function title(e){
   if(e.type==='diaper')return e.kind||'החלפה';
   if(e.type==='sleep')return e.end?'שינה · '+dur(e.end-e.t):'שינה · עדיין ישן/ה';
   if(e.type==='appt')return e.kind==='rx'?(e.title||'מרשם'):(e.title||'תור');
+  if(e.type==='remind')return'תזכורת האכלה';
   return'רישום';
 }
 function subtitle(e){if(e.type==='sleep')return e.end?hm(e.t)+' – '+hm(e.end):'מ-'+hm(e.t);return''}
@@ -669,6 +698,29 @@ function pulseLive(){const now=Date.now();if(typeof dBottle!=='undefined'&&dBott
 function seg(id,opts,val,cb){const el=$(id);el.innerHTML=opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{haptic(5);cb(b.dataset.v)})}
 
+/* ---------- manual feeding reminder ---------- */
+let rmBaby='A';
+function pendingRemind(b){let r=null;for(const e of data){if(e.baby!==b||e.type!=='remind'||e.kind==='sent')continue;if(!r||e.t<r.t)r=e}return r}
+function remindLbl(t){const n=daysAgo(t);if(n===0)return hm(t);if(n===-1)return'מחר · '+hm(t);return dmy(t)+' · '+hm(t)}
+function remindRowHTML(b){const r=pendingRemind(b);
+  if(r)return`<div class="remindRow"><button type="button" class="remindChip on" onclick="event.stopPropagation();openRemind('${b}')"><span>⏰</span><span>תזכורת ב-${esc(remindLbl(r.t))}</span></button><button type="button" class="remindX" onclick="event.stopPropagation();cancelRemind('${r.id}')" aria-label="ביטול תזכורת">×</button></div>`;
+  return`<div class="remindRow"><button type="button" class="remindChip" onclick="event.stopPropagation();openRemind('${b}')">⏰ תזכיר לי</button></div>`}
+function openRemind(b){rmBaby=b==='B'?'B':'A';const now=Date.now(),pending=pendingRemind(rmBaby);
+  $('rmTitle').textContent='תזכורת האכלה · '+names[rmBaby];
+  const cur=$('rmCur'),del=$('rmDel');
+  if(pending){cur.style.display='';cur.textContent='תזכורת קיימת ב-'+remindLbl(pending.t)+'. בחירה חדשה תחליף אותה.';del.style.display=''}
+  else{cur.style.display='none';del.style.display='none'}
+  const max=(d=>{d.setFullYear(d.getFullYear()+2);return ymdOf(d.getTime())})(new Date());
+  $('rmDate').min=ymdOf(now);$('rmDate').max=max;$('rmDate').value=ymdOf(now);$('rmTime').value=hmInput(now);
+  haptic(6);dRemind.showModal()}
+function remindAt(){return combineAppt($('rmDate').value||ymdOf(Date.now()),$('rmTime').value)}
+function setRemind(b,t){if(!(t>0))return;snap();data=data.filter(e=>!(e.baby===b&&e.type==='remind'&&e.kind!=='sent'));data.push(mk({id:uid(),baby:b,type:'remind',t}));
+  commit('⏰ תזכורת ל'+names[b]+' ב-'+remindLbl(t)+(sync?'':'. נשמרה בטלפון הזה בלבד, ובלי סנכרון לא תגיע התראה בטלגרם.'))}
+function quickRemind(min){const t=Date.now()+Math.max(1,min)*60000;if(typeof dRemind!=='undefined'&&dRemind.open)dRemind.close();setRemind(rmBaby,t)}
+function saveRemind(){const t=remindAt();if(!t||t<Date.now()-60000){toast('בחרו שעה מהרגע הזה ואילך',false);return}dRemind.close();setRemind(rmBaby,t)}
+function cancelRemind(id){const e=data.find(x=>x.id===id);if(!e)return;snap();data=data.filter(x=>x.id!==id);if(typeof dRemind!=='undefined'&&dRemind.open)dRemind.close();commit('התזכורת בוטלה')}
+function cancelRemindOpen(){const r=pendingRemind(rmBaby);if(!r){if(typeof dRemind!=='undefined')dRemind.close();return}cancelRemind(r.id)}
+
 /* ---------- rendering ---------- */
 function tier(ms){const h=ms/H;if(h<FEED_INTERVAL_H*2/3)return'var(--ok)';if(h<FEED_INTERVAL_H)return'var(--mid)';return'var(--hot)'}
 function ring(b,size){const lf=lastOf(b,isFeed),r=size==='big'?52:42,c=2*Math.PI*r,vb=size==='big'?118:96,cx=vb/2;
@@ -688,6 +740,7 @@ function renderHome(){
       <div class="subl num">${lf?(lf.type==='bottle'?'<b style="color:var(--ink);font-size:14px">'+lf.ml+' סמ״ק</b> · ':'')+hm(lf.t):'&nbsp;'}</div>${byLine(lf)}
       <div class="subl num" style="margin-top:2px">היום: <b style="color:var(--c);font-size:14px">${stats(b,startOfDay(Date.now())).ml} סמ״ק</b></div>
       ${sleepChip(b)}
+      ${remindRowHTML(b)}
       <div class="mini">${ld?'החלפה: '+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byLine(ld):'אין החלפות עדיין'}</div></div>
       <div class="acts">
         <button class="act" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
@@ -751,7 +804,7 @@ function renderBaby(){
   $('hero').innerHTML=ring(b,'big')+`<div class="heroInfo"><h3>${esc(names[b])}</h3>
     <div class="age" data-age="${b}">${esc(ageTxt(b))}</div>
     <p>🍼 ${lf?(lf.type==='bottle'?'<b style="color:var(--ink)">'+lf.ml+' סמ״ק</b> · ':'')+'ב-'+hm(lf.t)+byTxt(lf):'אין בקבוק עדיין'}</p>
-    <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byTxt(ld):'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}</div>`;
+    <p>${ld?(ld.kind==='קטנים'?'💧 ':'💩 ')+esc(ld.kind)+' · לפני <span data-ago="'+ld.t+'">'+sinceTxt(Date.now()-ld.t)+'</span>'+byTxt(ld):'🧷 אין החלפות עדיין'}</p>${sleepChip(b)}${remindRowHTML(b)}</div>`;
   $('bigActs').innerHTML=`<button class="bigAct milk" onclick="openBottle('${b}')"><i>🍼</i>בקבוק</button>
     <button class="bigAct pee" onclick="logDiaper(['${b}'],'קטנים')"><i>💧</i>קטנים</button>
     <button class="bigAct poo" onclick="logDiaper(['${b}'],'גדולים')"><i>💩</i>גדולים</button>
@@ -811,7 +864,7 @@ function tick(){
 }
 
 /* toast */
-function toast(msg,canUndo){const t=$('toast');$('toastTx').textContent=msg;$('toastUndo').style.display=canUndo?'':'none';t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>{t.classList.remove('show');if(canUndo){undoSnap=null;undoIds=null}},canUndo?6000:2200)}
+function toast(msg,canUndo,ms){const t=$('toast');$('toastTx').textContent=msg;$('toastUndo').style.display=canUndo?'':'none';t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>{t.classList.remove('show');if(canUndo){undoSnap=null;undoIds=null}},ms||(canUndo?6000:2200))}
 
 /* edit / manual */
 const toLocal=t=>{const d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
@@ -821,7 +874,7 @@ function renderEdit(){
   seg('eKind',[['קטנים','💧 קטנים'],['גדולים','💩 גדולים'],['קטנים + גדולים','שניהם']],eState.kind,v=>{eState.kind=v;renderEdit()});
   const t=eState.type;$('fMl').style.display=t==='bottle'?'':'none';$('fKind').style.display=t==='diaper'?'':'none';$('fEnd').style.display=t==='sleep'?'':'none';$('lTime').textContent=t==='sleep'?'שעת הירדמות':'שעה';
 }
-function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;if(e.type==='appt'&&e.kind==='rx'){viewRx(e.id);return}if(e.type==='appt'){openAppt(e.id);return}editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
+function editDlg(id){const e=data.find(x=>x.id===id);if(!e)return;if(e.type==='appt'&&e.kind==='rx'){viewRx(e.id);return}if(e.type==='appt'){openAppt(e.id);return}if(e.type==='remind'){openRemind(e.baby);return}editId=id;eState={baby:e.baby,type:e.type==='feed'?'bottle':e.type,kind:e.kind||'קטנים',by:e.by||''};fillBy();
   $('eTitle').textContent='עריכת רישום';$('eDel').style.display='';$('eMl').value=e.ml||'';$('eTime').value=toLocal(e.t);$('eEnd').value=e.end?toLocal(e.end):'';renderEdit();haptic(6);dEdit.showModal()}
 function manualDlg(){editId=null;eState={baby:view==='log'&&filter!=='all'?filter:cur,type:'bottle',kind:'קטנים',by:me};fillBy();
   $('eTitle').textContent='רישום ידני';$('eDel').style.display='none';$('eMl').value='';$('eTime').value=toLocal(Date.now());$('eEnd').value='';renderEdit();dEdit.showModal()}
@@ -1026,7 +1079,7 @@ async function checkAppUpdate(){
   }catch(e){}
   finally{checkAppUpdate._busy=false}
 }
-function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dAppt!=='undefined'&&dAppt.open)||(typeof dRx!=='undefined'&&dRx.open)||(typeof dRxView!=='undefined'&&dRxView.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
+function onAppResume(){if(document.hidden)return;consumeStamp();if(typeof dBottle!=='undefined'&&dBottle.open)setBTime(null);if(typeof dTime!=='undefined'&&dTime.open)fillTimeSheet(Date.now());const sheetOpen=(typeof dBottle!=='undefined'&&dBottle.open)||(typeof dTime!=='undefined'&&dTime.open)||(typeof dEdit!=='undefined'&&dEdit.open)||(typeof dAppt!=='undefined'&&dAppt.open)||(typeof dRx!=='undefined'&&dRx.open)||(typeof dRxView!=='undefined'&&dRxView.open)||(typeof dRemind!=='undefined'&&dRemind.open);if(!sheetOpen){loadLog();rebuildKnown();render();checkAppUpdate()}tick();if(!sheetOpen)syncSoon()}
 document.addEventListener('visibilitychange',onAppResume);
 window.addEventListener('pageshow',onAppResume);
 window.addEventListener('storage',e=>{if(e.key===KEY){loadLog();rebuildKnown();render()}});
@@ -1075,10 +1128,16 @@ async function syncNow(){
     const recs=Object.values(queue);
     if(recs.length){const sent=recs.map(r=>Object.assign({},r,{updated:r.updated||r.t||1}));
       await api({op:'upsert',records:sent});pushed=true;
-      sent.forEach(r=>{const q=queue[r.id];if(q&&(q.updated||q.t||1)===r.updated)delete queue[r.id]});saveQ()}
+      sent.forEach(r=>{if(r.type==='remind'&&!r.deleted)return;const q=queue[r.id];if(q&&(q.updated||q.t||1)===r.updated)delete queue[r.id]});saveQ()}
     if(sync.namesPending){const j=await api({op:'setNames',names:{A:names.A,B:names.B,users:users(),updated:names.updated||Date.now()}});sync.namesPending=0;saveSync();applyNames(j.names)}
     const j=await api({op:'list',since:Math.max(0,(sync.since||0)-60000)});
     let ch=mergeRemote(j.records);if(applyNames(j.names))ch=true;
+    const listed=new Set((j.records||[]).map(r=>r&&r.id).filter(Boolean));
+    let unconfirmed=false;
+    Object.keys(queue).forEach(id=>{const q=queue[id];if(!q||q.type!=='remind'||q.deleted)return;if(listed.has(id)){delete queue[id];return}unconfirmed=true});
+    saveQ();
+    if(unconfirmed){if(!sync.remindWait){sync.remindWait=1;toast('התזכורת נשמרה בטלפון, אבל הסנכרון עוד לא מעודכן. ההתראה בטלגרם תתחיל אחרי עדכון השרת.',false,6000)}}
+    else if(sync.remindWait){delete sync.remindWait}
     sync.since=+j.now||sync.since;saveSync();syncFail=0;
     if(ch)render();
     setDot(Object.keys(queue).length?'busy':'ok');
